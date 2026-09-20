@@ -1,98 +1,90 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-    <title>LoveSatoru</title>
-    <style>
-        :root {
-            --bg: #f0f0f5;
-            --topbar-bg: #ffffff;
-            --bottombar-bg: #ffffff;
-            --my-bubble: #d1f0ff;
-            --other-bubble: #ffffff;
-            --text: #1a1a1a;
-            --subtext: #888;
-            --accent: #5b9bd5;
-            --border: #e0e0e0;
-            --shadow: 0 2px 12px rgba(0,0,0,0.06);
-            --radius: 18px;
-            --font-size: 15px;
-            --input-bg: #f5f5f7;
-            --danger: #e05555;
-            --tag-bg: #f0f0f5;
-            --overlay: rgba(0,0,0,0.5);
-            --safe-bottom: env(safe-area-inset-bottom,12px);
-        }
-        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; -webkit-user-select:none; user-select:none; }
-        html, body { height:100%; width:100%; overflow:hidden; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif; background:var(--bg); color:var(--text); font-size:var(--font-size); display:flex; justify-content:center; align-items:center; -webkit-overflow-scrolling:touch; transition:background 0.4s; }
-        body.has-bg { background-size:cover; background-position:center; background-repeat:no-repeat; background-attachment:fixed; }
-        #app { width:100%; max-width:500px; height:100%; display:flex; flex-direction:column; position:relative; overflow:hidden; box-shadow:var(--shadow); background:transparent; border-radius:0; }
-        @media(min-width:501px) { #app { border-radius:20px; height:95%; max-height:900px; } }
-        .topbar { display:flex; align-items:center; padding:10px 14px; background:var(--topbar-bg); border-bottom:1px solid var(--border); gap:10px; z-index:10; flex-shrink:0; min-height:56px; transition:background 0.4s; }
-        .topbar .avatar-wrap { position:relative; flex-shrink:0; cursor:pointer; }
-        .topbar .avatar { width:42px; height:42px; border-radius:50%; object-fit:cover; border:2px solid var(--border); background:#ddd; }
-        .topbar .status-dot { position:absolute; bottom:1px; right:1px; width:11px; height:11px; border-radius:50%; border:2px solid #fff; background:#4cd964; }
-        .topbar .info { flex:1; min-width:0; cursor:pointer; }
-        .topbar .name { font-weight:600; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .topbar .status-text { font-size:12px; color:var(--subtext); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .topbar .btn-icon { width:34px; height:34px; border-radius:50%; border:none; background:var(--input-bg); cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:0.2s; }
-        .topbar .btn-icon:active { transform:scale(0.92); opacity:0.7; }
-        .chat-area { flex:1; overflow-y:auto; padding:12px 10px; display:flex; flex-direction:column; gap:8px; scroll-behavior:smooth; -webkit-overflow-scrolling:touch; background:transparent; }
-        .chat-area::-webkit-scrollbar { display:none; }
-        .msg-row { display:flex; flex-direction:column; max-width:82%; animation:fadeInUp 0.25s ease; }
-        .msg-row.me { align-self:flex-end; align-items:flex-end; }
-        .msg-row.other { align-self:flex-start; align-items:flex-start; }
-        @keyframes fadeInUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
-        .msg-bubble { padding:10px 14px; border-radius:var(--radius); word-break:break-word; position:relative; font-size:15px; line-height:1.5; cursor:pointer; transition:0.15s; box-shadow:0 1px 3px rgba(0,0,0,0.04); }
-        .msg-row.me .msg-bubble { background:var(--my-bubble); border-bottom-right-radius:6px; }
-        .msg-row.other .msg-bubble { background:var(--other-bubble); border-bottom-left-radius:6px; }
-        .msg-bubble:active { transform:scale(0.97); }
-        .msg-bubble .quote-preview { font-size:12px; color:var(--subtext); border-left:3px solid var(--accent); padding-left:8px; margin-bottom:6px; opacity:0.8; max-height:40px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-        .msg-bubble img.sticker-msg { max-width:140px; max-height:140px; border-radius:10px; display:block; }
-        .msg-time { font-size:11px; color:var(--subtext); margin-top:3px; padding:0 4px; }
-        .msg-status { font-size:11px; color:var(--subtext); margin-top:2px; padding:0 4px; }
-        .typing-indicator { align-self:flex-start; background:var(--other-bubble); padding:12px 16px; border-radius:var(--radius); border-bottom-left-radius:6px; font-size:13px; color:var(--subtext); display:flex; align-items:center; gap:6px; animation:fadeInUp 0.2s ease; }
-        .typing-dots { display:flex; gap:3px; }
-        .typing-dots span { width:7px; height:7px; border-radius:50%; background:#aaa; animation:bounce 0.7s infinite alternate; }
-        .typing-dots span:nth-child(2) { animation-delay:0.15s; } .typing-dots span:nth-child(3) { animation-delay:0.3s; }
-        @keyframes bounce { to { transform:translateY(-8px); opacity:0.4; } }
-        .bottombar { display:flex; align-items:flex-end; padding:8px 10px; background:var(--bottombar-bg); border-top:1px solid var(--border); gap:6px; z-index:10; flex-shrink:0; padding-bottom:calc(8px + var(--safe-bottom)); transition:background 0.4s; flex-wrap:wrap; }
-        .bottombar .input-wrap { flex:1; display:flex; align-items:flex-end; background:var(--input-bg); border-radius:22px; padding:4px 6px 4px 14px; gap:4px; min-width:0; }
-        .bottombar textarea { flex:1; border:none; background:transparent; resize:none; font-size:15px; line-height:1.4; max-height:100px; min-height:34px; padding:6px 0; outline:none; font-family:inherit; color:var(--text); -webkit-user-select:text; user-select:text; }
-        .bottombar .btn-sm { width:34px; height:34px; border-radius:50%; border:none; background:transparent; cursor:pointer; font-size:20px; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:0.2s; }
-        .bottombar .btn-sm:active { transform:scale(0.88); opacity:0.6; }
-        .bottombar .btn-send { width:40px; height:40px; border-radius:50%; border:none; background:var(--accent); color:#fff; cursor:pointer; font-size:18px; flex-shrink:0; transition:0.2s; display:flex; align-items:center; justify-content:center; }
-        .bottombar .btn-send:active { transform:scale(0.88); opacity:0.7; }
-        .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:var(--overlay); z-index:50; display:flex; align-items:flex-end; justify-content:center; animation:fadeIn 0.2s ease; }
-        @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-        .panel { background:#fff; width:100%; max-width:500px; max-height:85vh; border-radius:20px 20px 0 0; overflow-y:auto; padding:20px 16px; padding-bottom:calc(20px + var(--safe-bottom)); animation:slideUp 0.3s ease; z-index:51; position:relative; }
-        @keyframes slideUp { from { transform:translateY(100%); } to { transform:translateY(0); } }
-        .panel h3 { font-size:17px; margin-bottom:14px; text-align:center; font-weight:700; }
-        .panel .close-btn { position:absolute; top:12px; right:16px; width:32px; height:32px; border-radius:50%; border:none; background:#eee; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; z-index:2; }
-        .panel label { font-size:13px; font-weight:600; display:block; margin:10px 0 4px; color:#555; }
-        .panel input[type="text"],.panel input[type="file"],.panel textarea,.panel select { width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); font-size:14px; font-family:inherit; background:#fafafa; -webkit-user-select:text; user-select:text; }
-        .panel textarea { min-height:80px; resize:vertical; }
-        .panel .btn { display:inline-block; padding:10px 18px; border-radius:20px; border:none; cursor:pointer; font-size:14px; font-weight:600; margin:4px; transition:0.2s; }
-        .panel .btn:active { transform:scale(0.94); opacity:0.75; }
-        .btn-primary { background:var(--accent); color:#fff; }
-        .btn-outline { background:#fff; border:2px solid var(--accent); color:var(--accent); }
-        .btn-danger { background:var(--danger); color:#fff; }
-        .btn-smaller { padding:6px 12px; font-size:12px; border-radius:14px; }
-        .slider-group { display:flex; align-items:center; gap:10px; margin:6px 0; }
-        .slider-group input[type="range"] { flex:1; accent-color:var(--accent); height:6px; }
-        .slider-group .val { font-weight:700; font-size:14px; min-width:55px; text-align:right; color:var(--accent); }
-        .chip-row { display:flex; flex-wrap:wrap; gap:6px; margin:6px 0; }
-        .chip { padding:7px 14px; border-radius:16px; font-size:13px; background:var(--tag-bg); cursor:pointer; border:1.5px solid transparent; transition:0.2s; white-space:nowrap; }
-        .chip.active { border-color:var(--accent); background:#e8f2fc; font-weight:600; }
-        .wordcard-item { display:flex; align-items:center; justify-content:space-between; padding:8px 12px; border-radius:10px; background:#f9f9f9; margin:3px 0; font-size:13px; gap:8px; }
-        .reply-quote-bar { display:flex; align-items:center; gap:8px; padding:6px 12px; background:#f0f0f5; border-radius:10px; font-size:12px; color:var(--subtext); margin:0 10px 4px; flex-shrink:0; }
-        .reply-quote-bar .cancel-quote { cursor:pointer; font-weight:700; color:var(--danger); font-size:16px; padding:0 4px; }
-        .sticker-grid { display:grid; grid-template-columns: repeat(4,1fr); gap:8px; max-height:220px; overflow-y:auto; padding:4px; }
-        .sticker-grid img { width:100%; aspect-ratio:1; object-fit:cover; border-radius:10px; cursor:pointer; border:2px solid transparent; transition:0.15s; }
-        .sticker-grid img:active { border-color:var(--accent); transform:scale(0.9); }
-        .add-sticker-btn { aspect-ratio:1; border-radius:10px; border:2px dashed #ccc; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:28px; color:#aaa; background:#fafafa; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>LoveSatoru</title>
+<style>
+:root{--bg:#f0f0f5;--topbar-bg:#ffffff;--bottombar-bg:#ffffff;--my-bubble:#d1f0ff;--other-bubble:#ffffff;--text:#1a1a1a;--subtext:#888;--accent:#5b9bd5;--border:#e0e0e0;--shadow:0 2px 12px rgba(0,0,0,0.06);--radius:18px;--font-size:15px;--input-bg:#f5f5f7;--danger:#e05555;--tag-bg:#f0f0f5;--overlay:rgba(0,0,0,0.5);--safe-bottom:env(safe-area-inset-bottom,12px)}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+html,body{height:100%;width:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);font-size:var(--font-size);display:flex;justify-content:center;align-items:center;-webkit-overflow-scrolling:touch;transition:background 0.4s}
+body.has-bg{background-size:cover;background-position:center;background-repeat:no-repeat;background-attachment:fixed}
+#app{width:100%;max-width:500px;height:100%;display:flex;flex-direction:column;position:relative;overflow:hidden;box-shadow:var(--shadow);background:transparent;border-radius:0}
+@media(min-width:501px){#app{border-radius:20px;height:95%;max-height:900px}}
+.topbar{display:flex;align-items:center;padding:10px 14px;background:var(--topbar-bg);border-bottom:1px solid var(--border);gap:10px;z-index:10;flex-shrink:0;min-height:56px;transition:background 0.4s}
+.topbar .avatar-wrap{position:relative;flex-shrink:0;cursor:pointer}
+.topbar .avatar{width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid var(--border);background:#ddd}
+.topbar .status-dot{position:absolute;bottom:1px;right:1px;width:11px;height:11px;border-radius:50%;border:2px solid #fff;background:#4cd964}
+.topbar .info{flex:1;min-width:0;cursor:pointer}
+.topbar .name{font-weight:600;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .status-text{font-size:12px;color:var(--subtext);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .btn-icon{width:34px;height:34px;border-radius:50%;border:none;background:var(--input-bg);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:0.2s}
+.topbar .btn-icon:active{transform:scale(0.92);opacity:0.7}
+.chat-area{flex:1;overflow-y:auto;padding:12px 10px;display:flex;flex-direction:column;gap:8px;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;background:transparent}
+.chat-area::-webkit-scrollbar{display:none}
+.msg-row{display:flex;flex-direction:column;max-width:82%;animation:fadeInUp 0.25s ease}
+.msg-row.me{align-self:flex-end;align-items:flex-end}
+.msg-row.other{align-self:flex-start;align-items:flex-start}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.msg-bubble{padding:10px 14px;border-radius:var(--radius);word-break:break-word;position:relative;font-size:15px;line-height:1.5;cursor:pointer;transition:0.15s;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.msg-row.me .msg-bubble{background:var(--my-bubble);border-bottom-right-radius:6px}
+.msg-row.other .msg-bubble{background:var(--other-bubble);border-bottom-left-radius:6px}
+.msg-bubble:active{transform:scale(0.97)}
+.msg-bubble .quote-preview{font-size:12px;color:var(--subtext);border-left:3px solid var(--accent);padding-left:8px;margin-bottom:6px;opacity:0.9;max-height:70px;overflow:hidden;line-height:1.4;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}
+.msg-bubble .quote-preview .quote-tag{display:inline-block;background:var(--accent);color:#fff;font-size:10px;padding:1px 5px;border-radius:6px;margin-right:4px;vertical-align:middle}
+.msg-bubble img.sticker-msg{max-width:140px;max-height:140px;border-radius:10px;display:block}
+.letter-content{padding:2px 0}
+.letter-header{font-size:11px;color:#b8860b;margin-bottom:6px;padding-bottom:4px;border-bottom:1px dashed #e0d4b0;display:flex;align-items:center;gap:4px;font-weight:600}
+.letter-line{padding:3px 0;font-size:14px;line-height:1.55}
+.letter-line+.letter-line{border-top:1px solid rgba(0,0,0,0.04)}
+.msg-time{font-size:11px;color:var(--subtext);margin-top:3px;padding:0 4px}
+.msg-status{font-size:11px;color:var(--subtext);margin-top:2px;padding:0 4px}
+.typing-indicator{align-self:flex-start;background:var(--other-bubble);padding:12px 16px;border-radius:var(--radius);border-bottom-left-radius:6px;font-size:13px;color:var(--subtext);display:flex;align-items:center;gap:6px;animation:fadeInUp 0.2s ease}
+.typing-dots{display:flex;gap:3px}
+.typing-dots span{width:7px;height:7px;border-radius:50%;background:#aaa;animation:bounce 0.7s infinite alternate}
+.typing-dots span:nth-child(2){animation-delay:0.15s}
+.typing-dots span:nth-child(3){animation-delay:0.3s}
+@keyframes bounce{to{transform:translateY(-8px);opacity:0.4}}
+.bottombar{display:flex;align-items:flex-end;padding:8px 10px;background:var(--bottombar-bg);border-top:1px solid var(--border);gap:6px;z-index:10;flex-shrink:0;padding-bottom:calc(8px + var(--safe-bottom));transition:background 0.4s;flex-wrap:wrap}
+.bottombar .input-wrap{flex:1;display:flex;align-items:flex-end;background:var(--input-bg);border-radius:22px;padding:4px 6px 4px 14px;gap:4px;min-width:0}
+.bottombar textarea{flex:1;border:none;background:transparent;resize:none;font-size:15px;line-height:1.4;max-height:100px;min-height:34px;padding:6px 0;outline:none;font-family:inherit;color:var(--text);-webkit-user-select:text;user-select:text}
+.bottombar .btn-sm{width:34px;height:34px;border-radius:50%;border:none;background:transparent;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:0.2s}
+.bottombar .btn-sm:active{transform:scale(0.88);opacity:0.6}
+.bottombar .btn-send{width:40px;height:40px;border-radius:50%;border:none;background:var(--accent);color:#fff;cursor:pointer;font-size:18px;flex-shrink:0;transition:0.2s;display:flex;align-items:center;justify-content:center}
+.bottombar .btn-send:active{transform:scale(0.88);opacity:0.7}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--overlay);z-index:50;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn 0.2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.panel{background:#fff;width:100%;max-width:500px;max-height:85vh;border-radius:20px 20px 0 0;overflow-y:auto;padding:20px 16px;padding-bottom:calc(20px + var(--safe-bottom));animation:slideUp 0.3s ease;z-index:51;position:relative}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.panel h3{font-size:17px;margin-bottom:14px;text-align:center;font-weight:700}
+.panel .close-btn{position:absolute;top:12px;right:16px;width:32px;height:32px;border-radius:50%;border:none;background:#eee;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;z-index:2}
+.panel label{font-size:13px;font-weight:600;display:block;margin:10px 0 4px;color:#555}
+.panel input[type="text"],.panel input[type="file"],.panel textarea,.panel select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);font-size:14px;font-family:inherit;background:#fafafa;-webkit-user-select:text;user-select:text}
+.panel textarea{min-height:80px;resize:vertical}
+.panel .btn{display:inline-block;padding:10px 18px;border-radius:20px;border:none;cursor:pointer;font-size:14px;font-weight:600;margin:4px;transition:0.2s}
+.panel .btn:active{transform:scale(0.94);opacity:0.75}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-outline{background:#fff;border:2px solid var(--accent);color:var(--accent)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-smaller{padding:6px 12px;font-size:12px;border-radius:14px}
+.slider-group{display:flex;align-items:center;gap:10px;margin:6px 0}
+.slider-group input[type="range"]{flex:1;accent-color:var(--accent);height:6px}
+.slider-group .val{font-weight:700;font-size:14px;min-width:55px;text-align:right;color:var(--accent)}
+.chip-row{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.chip{padding:7px 14px;border-radius:16px;font-size:13px;background:var(--tag-bg);cursor:pointer;border:1.5px solid transparent;transition:0.2s;white-space:nowrap}
+.chip.active{border-color:var(--accent);background:#e8f2fc;font-weight:600}
+.wordcard-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:10px;background:#f9f9f9;margin:3px 0;font-size:13px;gap:8px}
+.reply-quote-bar{display:flex;align-items:center;gap:8px;padding:6px 12px;background:#f0f0f5;border-radius:10px;font-size:12px;color:var(--subtext);margin:0 10px 4px;flex-shrink:0;max-height:60px;overflow:hidden}
+.reply-quote-bar .cancel-quote{cursor:pointer;font-weight:700;color:var(--danger);font-size:16px;padding:0 4px;flex-shrink:0}
+.reply-quote-bar .quote-text{flex:1;line-height:1.3;max-height:44px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.sticker-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-height:220px;overflow-y:auto;padding:4px}
+.sticker-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;cursor:pointer;border:2px solid transparent;transition:0.15s}
+.sticker-grid img:active{border-color:var(--accent);transform:scale(0.9)}
+.add-sticker-btn{aspect-ratio:1;border-radius:10px;border:2px dashed #ccc;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:28px;color:#aaa;background:#fafafa}
+.msg-action-menu{position:absolute;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.18);z-index:30;padding:6px 0;min-width:120px;animation:fadeIn 0.15s ease}
+.msg-action-menu button{display:block;width:100%;padding:10px 16px;border:none;background:none;font-size:14px;text-align:left;cursor:pointer;white-space:nowrap}
+.msg-action-menu button:active{background:#f5f5f5}
+</style>
 </head>
 <body>
 <div id="app">
@@ -110,11 +102,13 @@
     </div>
     <div class="chat-area" id="chatArea"></div>
     <div class="reply-quote-bar" id="quoteBar" style="display:none;">
-        <span id="quotePreview">引用: ...</span>
+        <span class="quote-tag" style="background:var(--accent);color:#fff;font-size:10px;padding:1px 5px;border-radius:6px;">引用</span>
+        <span class="quote-text" id="quotePreview">...</span>
         <span class="cancel-quote" id="cancelQuote">✕</span>
     </div>
     <div class="bottombar">
         <button class="btn-sm" id="btnEmoji" title="表情包">😊</button>
+        <button class="btn-sm" id="btnFeatures" title="功能">✉️</button>
         <div class="input-wrap">
             <textarea id="msgInput" rows="1" placeholder="输入消息..."></textarea>
         </div>
@@ -128,631 +122,902 @@
 <input type="file" id="hiddenEmojiInput" style="display:none" accept="image/*" multiple>
 
 <script>
-    (function() {
-        const DB_NAME = 'LoveSatoruDB';
-        const DB_VERSION = 4;
-        let db = null;
+(function(){
+const DB_NAME='LoveSatoruDB';
+const DB_VERSION=5;
+let db=null;
 
-        function openDB() {
-            return new Promise((resolve, reject) => {
-                const req = indexedDB.open(DB_NAME, DB_VERSION);
-                req.onupgradeneeded = (e) => {
-                    const d = e.target.result;
-                    if (!d.objectStoreNames.contains('settings')) d.createObjectStore('settings', { keyPath: 'key' });
-                    if (!d.objectStoreNames.contains('messages')) d.createObjectStore('messages', { keyPath: 'id', autoIncrement: true });
-                    if (!d.objectStoreNames.contains('wordCardGroups')) d.createObjectStore('wordCardGroups', { keyPath: 'id', autoIncrement: true });
-                    if (!d.objectStoreNames.contains('userStickers')) d.createObjectStore('userStickers', { keyPath: 'id', autoIncrement: true });
-                    if (!d.objectStoreNames.contains('otherStickers')) d.createObjectStore('otherStickers', { keyPath: 'id', autoIncrement: true });
-                };
-                req.onsuccess = (e) => { db = e.target.result; resolve(db); };
-                req.onerror = (e) => reject(e.target.error);
-            });
+function openDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open(DB_NAME,DB_VERSION);req.onupgradeneeded=(e)=>{const d=e.target.result;if(!d.objectStoreNames.contains('settings'))d.createObjectStore('settings',{keyPath:'key'});if(!d.objectStoreNames.contains('messages'))d.createObjectStore('messages',{keyPath:'id',autoIncrement:true});if(!d.objectStoreNames.contains('wordCardGroups'))d.createObjectStore('wordCardGroups',{keyPath:'id',autoIncrement:true});if(!d.objectStoreNames.contains('userStickers'))d.createObjectStore('userStickers',{keyPath:'id',autoIncrement:true});if(!d.objectStoreNames.contains('otherStickers'))d.createObjectStore('otherStickers',{keyPath:'id',autoIncrement:true});if(!d.objectStoreNames.contains('pendingTasks'))d.createObjectStore('pendingTasks',{keyPath:'id',autoIncrement:true});};req.onsuccess=(e)=>{db=e.target.result;resolve(db)};req.onerror=(e)=>reject(e.target.error)})}
+function dbPut(s,d){return new Promise((res,rej)=>{const tx=db.transaction(s,'readwrite');const r=tx.objectStore(s).put(d);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+function dbGetAll(s){return new Promise((res,rej)=>{const tx=db.transaction(s,'readonly');const r=tx.objectStore(s).getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+function dbGet(s,k){return new Promise((res,rej)=>{const tx=db.transaction(s,'readonly');const r=tx.objectStore(s).get(k);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+function dbDelete(s,k){return new Promise((res,rej)=>{const tx=db.transaction(s,'readwrite');const r=tx.objectStore(s).delete(k);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+function dbClear(s){return new Promise((res,rej)=>{const tx=db.transaction(s,'readwrite');const r=tx.objectStore(s).clear();r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+
+const state={
+    otherName:'Satoru',otherStatus:'在线',
+    statusWords:['在线','忙碌','离开','睡觉中','工作中','想你了','emo中','充电中'],
+    myAvatar:null,otherAvatar:null,
+    minReplySec:2,maxReplySec:15,
+    activeWordCardGroupIds:[],  // 多选
+    bgImage:null,topbarColor:'#ffffff',bottombarColor:'#ffffff',
+    // 写信
+    autoSendLetter:false,
+    autoSendIntervalMin:1,autoSendIntervalMax:3,
+};
+
+async function loadSettings(){
+    const all=await dbGetAll('settings');
+    for(const s of all){if(s.key in state)state[s.key]=s.value;}
+    if(!Array.isArray(state.activeWordCardGroupIds))state.activeWordCardGroupIds=[];
+    applySkin();
+}
+async function saveSetting(key,value){
+    state[key]=value;
+    await dbPut('settings',{key,value});
+    if(['bgImage','topbarColor','bottombarColor'].includes(key))applySkin();
+}
+function applySkin(){
+    document.body.style.backgroundImage=(state.bgImage?.startsWith('data:'))?`url(${state.bgImage})`:'';
+    document.body.classList.toggle('has-bg',!!state.bgImage?.startsWith('data:'));
+    document.querySelector('.topbar').style.background=state.topbarColor||'#ffffff';
+    document.querySelector('.bottombar').style.background=state.bottombarColor||'#ffffff';
+    document.documentElement.style.setProperty('--topbar-bg',state.topbarColor||'#ffffff');
+    document.documentElement.style.setProperty('--bottombar-bg',state.bottombarColor||'#ffffff');
+}
+
+const chatArea=document.getElementById('chatArea');
+const msgInput=document.getElementById('msgInput');
+const btnSend=document.getElementById('btnSend');
+const btnEmoji=document.getElementById('btnEmoji');
+const btnFeatures=document.getElementById('btnFeatures');
+const btnSettings=document.getElementById('btnSettings');
+const btnWordCards=document.getElementById('btnWordCards');
+const overlayContainer=document.getElementById('overlayContainer');
+const quoteBar=document.getElementById('quoteBar');
+const quotePreview=document.getElementById('quotePreview');
+const cancelQuote=document.getElementById('cancelQuote');
+const otherAvatarImg=document.getElementById('otherAvatar');
+const otherNameEl=document.getElementById('otherName');
+const otherStatusEl=document.getElementById('otherStatus');
+const hiddenFileInput=document.getElementById('hiddenFileInput');
+const hiddenJsonInput=document.getElementById('hiddenJsonInput');
+const hiddenBgInput=document.getElementById('hiddenBgInput');
+const hiddenEmojiInput=document.getElementById('hiddenEmojiInput');
+
+let pendingReadCount=0;
+let pendingReplyTimer=null;
+let typingIndicatorEl=null;
+let sendingIndicatorEl=null;
+let isTyping=false;
+let fileCallback=null,bgCallback=null,emojiCallback=null;
+let statusChangeTimer=null;
+
+function formatTime(ts){const d=new Date(ts);const pad=n=>String(n).padStart(2,'0');return `${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`}
+function scrollToBottom(){requestAnimationFrame(()=>{chatArea.scrollTop=chatArea.scrollHeight})}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function readFileAsDataURL(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file)})}
+
+// ============ 消息渲染 ============
+async function loadMessages(){
+    chatArea.innerHTML='';
+    const msgs=await dbGetAll('messages');
+    msgs.sort((a,b)=>a.timestamp-b.timestamp);
+    for(const m of msgs)appendMsgToDOM(m,false);
+    scrollToBottom();
+    updateOtherUI();
+}
+
+function appendMsgToDOM(msg,animate=true){
+    const row=document.createElement('div');
+    row.className=`msg-row ${msg.sender==='me'?'me':'other'}`;
+    row.dataset.msgId=msg.id;
+    const bubble=document.createElement('div');
+    bubble.className='msg-bubble';
+    // 引用显示
+    if(msg.quoteId||msg.quotePreview){
+        const qp=document.createElement('div');
+        qp.className='quote-preview';
+        qp.innerHTML=`<span class="quote-tag">引用</span>${escHtml(msg.quotePreview||'[消息]')}`;
+        bubble.appendChild(qp);
+    }
+    // 内容
+    if(msg.type==='letter'){
+        const letterDiv=document.createElement('div');
+        letterDiv.className='letter-content';
+        const header=document.createElement('div');
+        header.className='letter-header';
+        header.textContent='✉️ 信件';
+        letterDiv.appendChild(header);
+        const lines=Array.isArray(msg.content)?msg.content:[msg.content];
+        lines.forEach(line=>{
+            const p=document.createElement('div');
+            p.className='letter-line';
+            p.textContent=line;
+            letterDiv.appendChild(p);
+        });
+        bubble.appendChild(letterDiv);
+    }else if(msg.type==='sticker'){
+        const img=document.createElement('img');
+        img.className='sticker-msg';
+        img.src=msg.content;
+        bubble.appendChild(img);
+    }else{
+        bubble.textContent=msg.content;
+    }
+    row.appendChild(bubble);
+    const timeDiv=document.createElement('div');
+    timeDiv.className='msg-time';
+    timeDiv.textContent=formatTime(msg.timestamp);
+    row.appendChild(timeDiv);
+    if(msg.sender==='me'&&msg.status){
+        const statusDiv=document.createElement('div');
+        statusDiv.className='msg-status';
+        statusDiv.textContent=msg.status==='read'?'已读':'已发送';
+        row.appendChild(statusDiv);
+    }
+    row.addEventListener('click',(e)=>{e.stopPropagation();showMsgMenu(row,msg)});
+    if(!animate)row.style.animation='none';
+    chatArea.appendChild(row);
+}
+
+function updateMsgStatus(msgId,status){
+    const row=chatArea.querySelector(`[data-msg-id="${msgId}"]`);
+    if(!row)return;
+    let statusDiv=row.querySelector('.msg-status');
+    if(!statusDiv){statusDiv=document.createElement('div');statusDiv.className='msg-status';row.appendChild(statusDiv)}
+    statusDiv.textContent=status==='read'?'已读':'已发送';
+}
+
+async function addMessage(sender,content,type='text',quoteId=null,quotePreview=null){
+    const msg={sender,content,type,timestamp:Date.now(),status:sender==='me'?'sent':undefined,quoteId,quotePreview};
+    const id=await dbPut('messages',msg);
+    msg.id=id;
+    appendMsgToDOM(msg,true);
+    scrollToBottom();
+    return msg;
+}
+
+async function getQuotePreview(msgId){
+    const all=await dbGetAll('messages');
+    const m=all.find(x=>x.id===msgId);
+    if(!m)return '';
+    if(m.type==='letter'){const l=Array.isArray(m.content)?m.content:[];return '【信件】'+l.slice(0,2).join(' / ')+(l.length>2?'...':'')}
+    if(m.type==='sticker')return '[表情包]';
+    return (m.content||'').slice(0,80);
+}
+
+// ============ 消息菜单 ============
+function showMsgMenu(row,msg){
+    const old=document.querySelector('.msg-action-menu');
+    if(old)old.remove();
+    const menu=document.createElement('div');
+    menu.className='msg-action-menu';
+    const rect=row.getBoundingClientRect();
+    const appRect=document.getElementById('app').getBoundingClientRect();
+    let top=rect.top-appRect.top-10;
+    let left=msg.sender==='me'?(rect.right-appRect.left-130):(rect.left-appRect.left);
+    if(left<5)left=5;
+    if(top<0)top=rect.bottom-appRect.top+5;
+    if(top>appRect.height-150)top=appRect.height-150;
+    menu.style.top=top+'px';
+    menu.style.left=left+'px';
+
+    const btnQuote=document.createElement('button');
+    btnQuote.textContent='💬 引用回复';
+    btnQuote.onclick=async()=>{
+        state.quoteMsgId=msg.id;
+        const preview=await getQuotePreview(msg.id);
+        quotePreview.textContent=preview;
+        quoteBar.style.display='flex';
+        menu.remove();
+        msgInput.focus();
+    };
+    menu.appendChild(btnQuote);
+
+    if(msg.sender==='other'){
+        const btnDel=document.createElement('button');
+        btnDel.textContent='🗑 删除此消息';
+        btnDel.style.color='#e05555';
+        btnDel.onclick=async()=>{await dbDelete('messages',msg.id);row.remove();menu.remove()};
+        menu.appendChild(btnDel);
+    }
+    if(msg.sender==='me'){
+        const btnDel=document.createElement('button');
+        btnDel.textContent='🗑 删除';
+        btnDel.style.color='#e05555';
+        btnDel.onclick=async()=>{await dbDelete('messages',msg.id);row.remove();menu.remove()};
+        menu.appendChild(btnDel);
+    }
+    document.getElementById('app').appendChild(menu);
+    const close=(e)=>{if(!menu.contains(e.target)&&!row.contains(e.target)){menu.remove();document.removeEventListener('click',close);document.removeEventListener('touchstart',close)}};
+    setTimeout(()=>{document.addEventListener('click',close);document.addEventListener('touchstart',close)},50);
+}
+
+// ============ 字卡池（多分组） ============
+async function getActiveWordCards(){
+    const gids=state.activeWordCardGroupIds||[];
+    const allCards=[];
+    if(gids.length>0){
+        for(const gid of gids){
+            const g=await dbGet('wordCardGroups',gid);
+            if(g&&g.cards)allCards.push(...g.cards);
         }
+    }else{
+        const allGroups=await dbGetAll('wordCardGroups');
+        for(const g of allGroups){if(g.cards)allCards.push(...g.cards);}
+    }
+    return [...new Set(allCards)];
+}
 
-        function dbPut(store, data) { return new Promise((resolve, reject) => { const tx = db.transaction(store,'readwrite'); const req = tx.objectStore(store).put(data); req.onsuccess = () => resolve(req.result); req.onerror = () => reject(req.error); }); }
-        function dbGetAll(store) { return new Promise((resolve, reject) => { const tx = db.transaction(store,'readonly'); const req = tx.objectStore(store).getAll(); req.onsuccess = () => resolve(req.result); req.onerror = () => reject(req.error); }); }
-        function dbGet(store, key) { return new Promise((resolve, reject) => { const tx = db.transaction(store,'readonly'); const req = tx.objectStore(store).get(key); req.onsuccess = () => resolve(req.result); req.onerror = () => reject(req.error); }); }
-        function dbDelete(store, key) { return new Promise((resolve, reject) => { const tx = db.transaction(store,'readwrite'); const req = tx.objectStore(store).delete(key); req.onsuccess = () => resolve(); req.onerror = () => reject(req.error); }); }
-        function dbClear(store) { return new Promise((resolve, reject) => { const tx = db.transaction(store,'readwrite'); const req = tx.objectStore(store).clear(); req.onsuccess = () => resolve(); req.onerror = () => reject(req.error); }); }
+async function buildReplyPool(){
+    const pool=[];
+    const cards=await getActiveWordCards();
+    cards.forEach(c=>pool.push({type:'text',content:c}));
+    const stickers=await dbGetAll('otherStickers');
+    stickers.forEach(s=>pool.push({type:'sticker',content:s.dataUrl}));
+    return pool;
+}
 
-        const state = {
-            otherName: 'Satoru',
-            otherStatus: '在线',
-            statusWords: ['在线','忙碌','离开','睡觉中','工作中','想你了','emo中','充电中'],
-            myAvatar: null,
-            otherAvatar: null,
-            minReplySec: 2,
-            maxReplySec: 15,
-            activeWordCardGroupId: null,
-            bgImage: null,
-            topbarColor: '#ffffff',
-            bottombarColor: '#ffffff',
+// ============ 用户消息 → 已读 → 发消息中 → 输入中 → 回复 ============
+async function handleUserMessage(msg){
+    pendingReadCount++;
+    if(pendingReplyTimer){clearTimeout(pendingReplyTimer);pendingReplyTimer=null;}
+    hideSendingIndicator();
+    hideTyping();
+
+    const readDelay=800+Math.random()*1500;
+    setTimeout(async()=>{
+        updateMsgStatus(msg.id,'read');
+        const all=await dbGetAll('messages');
+        const found=all.find(m=>m.id===msg.id);
+        if(found&&found.status!=='read'){found.status='read';await dbPut('messages',found);}
+        pendingReadCount--;
+        if(pendingReadCount<=0){pendingReadCount=0;scheduleReply();}
+    },readDelay);
+}
+
+function scheduleReply(){
+    if(pendingReplyTimer)clearTimeout(pendingReplyTimer);
+    if(pendingReadCount>0)return;
+    const minSec=Math.max(0,Math.min(120,state.minReplySec||2));
+    const maxSec=Math.max(minSec,Math.min(300,state.maxReplySec||15));
+    const delay=(minSec+Math.random()*(maxSec-minSec))*1000;
+    pendingReplyTimer=setTimeout(executeReply,delay);
+}
+
+async function executeReply(){
+    if(pendingReadCount>0)return;
+    pendingReplyTimer=null;
+    // 1. 显示"发消息中"
+    showSendingIndicator();
+    await sleep(1000+Math.random()*1500);
+    hideSendingIndicator();
+    // 2. 显示"对方输入中"
+    showTyping();
+    await sleep(1000+Math.random()*2000);
+    hideTyping();
+    // 3. 发送回复
+    const pool=await buildReplyPool();
+    if(pool.length===0){
+        await addMessage('other','嗯嗯~','text');
+        scrollToBottom();
+        return;
+    }
+    const count=Math.floor(Math.random()*3)+1;
+    const chosen=[];const temp=[...pool];
+    for(let i=0;i<count&&temp.length>0;i++){
+        const idx=Math.floor(Math.random()*temp.length);
+        chosen.push(temp.splice(idx,1)[0]);
+    }
+    for(let i=0;i<chosen.length;i++){
+        await addMessage('other',chosen[i].content,chosen[i].type);
+        scrollToBottom();
+        if(i<chosen.length-1)await sleep(800+Math.random()*2000);
+    }
+}
+
+function showSendingIndicator(){
+    if(sendingIndicatorEl)return;
+    sendingIndicatorEl=document.createElement('div');
+    sendingIndicatorEl.className='typing-indicator';
+    sendingIndicatorEl.innerHTML='📨 发消息中...';
+    chatArea.appendChild(sendingIndicatorEl);
+    scrollToBottom();
+}
+function hideSendingIndicator(){
+    if(sendingIndicatorEl?.parentNode)sendingIndicatorEl.parentNode.removeChild(sendingIndicatorEl);
+    sendingIndicatorEl=null;
+}
+function showTyping(){
+    if(isTyping)return;
+    isTyping=true;
+    typingIndicatorEl=document.createElement('div');
+    typingIndicatorEl.className='typing-indicator';
+    typingIndicatorEl.innerHTML='对方输入中 <span class="typing-dots"><span></span><span></span><span></span></span>';
+    chatArea.appendChild(typingIndicatorEl);
+    scrollToBottom();
+}
+function hideTyping(){
+    isTyping=false;
+    if(typingIndicatorEl?.parentNode)typingIndicatorEl.parentNode.removeChild(typingIndicatorEl);
+    typingIndicatorEl=null;
+}
+
+// ============ 状态随机更换 ============
+function startStatusRandomizer(){
+    if(statusChangeTimer)clearTimeout(statusChangeTimer);
+    const change=async()=>{
+        if(state.statusWords.length===0)return;
+        const newStatus=state.statusWords[Math.floor(Math.random()*state.statusWords.length)];
+        if(newStatus!==state.otherStatus){
+            state.otherStatus=newStatus;
+            await saveSetting('otherStatus',newStatus);
+            otherStatusEl.textContent=newStatus;
+        }
+        const next=(15+Math.random()*45)*60*1000; // 15-60分钟
+        statusChangeTimer=setTimeout(change,next);
+    };
+    statusChangeTimer=setTimeout(change,8000);
+}
+
+// ============ 面板基础 ============
+function openPanel(html){
+    overlayContainer.innerHTML='';
+    const overlay=document.createElement('div');
+    overlay.className='overlay';
+    const panel=document.createElement('div');
+    panel.className='panel';
+    panel.innerHTML=html;
+    overlay.appendChild(panel);
+    overlay.addEventListener('click',(e)=>{if(e.target===overlay)closePanel()});
+    overlayContainer.appendChild(overlay);
+    panel.querySelector('.close-btn')?.addEventListener('click',closePanel);
+}
+function closePanel(){overlayContainer.innerHTML=''}
+
+// ============ 设置面板 ============
+function openSettingsPanel(){
+    const minSec=state.minReplySec||2,maxSec=state.maxReplySec||15;
+    const html=`
+    <button class="close-btn">✕</button><h3>⚙️ 设置</h3>
+    <label>对方名字</label><input type="text" id="setOtherName" value="${escHtml(state.otherName)}">
+    <label>对方状态</label><select id="setOtherStatus">${state.statusWords.map(w=>`<option ${w===state.otherStatus?'selected':''}>${escHtml(w)}</option>`).join('')}</select>
+    <label>状态词管理</label><div class="chip-row" id="statusChips">${state.statusWords.map((w,i)=>`<span class="chip">${escHtml(w)}<small style="color:#e05555;cursor:pointer;margin-left:4px;" data-delidx="${i}">×</small></span>`).join('')}</div>
+    <input type="text" id="newStatusWord" placeholder="新状态词" style="width:70%"><button class="btn btn-smaller btn-primary" id="addStatusWord">+</button>
+    <label>最快回复时长：<span id="minVal">${minSec}</span>s（0-120s）</label>
+    <div class="slider-group"><input type="range" id="minReplySlider" min="0" max="120" value="${minSec}" step="1"><span class="val" id="minVal2">${minSec}s</span></div>
+    <label>最慢回复时长：<span id="maxVal">${maxSec}</span>s（0-300s）</label>
+    <div class="slider-group"><input type="range" id="maxReplySlider" min="0" max="300" value="${maxSec}" step="1"><span class="val" id="maxVal2">${maxSec}s</span></div>
+    <label>顶栏颜色</label><input type="color" id="topbarColorInput" value="${state.topbarColor||'#ffffff'}">
+    <label>底栏颜色</label><input type="color" id="bottombarColorInput" value="${state.bottombarColor||'#ffffff'}">
+    <label>背景图</label><button class="btn btn-outline btn-smaller" id="btnPickBg">📷 选择</button><button class="btn btn-smaller btn-danger" id="btnClearBg">清除</button>
+    <hr><label>对方头像</label><button class="btn btn-outline btn-smaller" id="btnOtherAvatar">📷 选择</button>
+    <label>我的头像</label><button class="btn btn-outline btn-smaller" id="btnMyAvatar">📷 选择</button>
+    <hr><button class="btn btn-primary" id="btnExportAll">📤 导出全部数据</button>
+    <button class="btn btn-outline" id="btnImportAll">📥 导入全部数据</button>
+    <button class="btn btn-danger btn-smaller" id="btnClearAll">⚠️ 清除所有</button>
+    `;
+    openPanel(html);
+    setTimeout(()=>{
+        const minSlider=document.getElementById('minReplySlider');
+        const maxSlider=document.getElementById('maxReplySlider');
+        minSlider.oninput=function(){
+            document.getElementById('minVal').textContent=this.value;
+            document.getElementById('minVal2').textContent=this.value+'s';
+            if(+maxSlider.value<+this.value){maxSlider.value=this.value;document.getElementById('maxVal').textContent=this.value;document.getElementById('maxVal2').textContent=this.value+'s';}
         };
-
-        async function loadSettings() {
-            const all = await dbGetAll('settings');
-            for (const s of all) { if (s.key in state) state[s.key] = s.value; }
-            applySkin();
-        }
-        async function saveSetting(key, value) {
-            state[key] = value;
-            await dbPut('settings', { key, value });
-            if (['bgImage','topbarColor','bottombarColor'].includes(key)) applySkin();
-        }
-        function applySkin() {
-            document.body.style.backgroundImage = (state.bgImage?.startsWith('data:')) ? `url(${state.bgImage})` : '';
-            document.body.classList.toggle('has-bg', !!state.bgImage?.startsWith('data:'));
-            document.querySelector('.topbar').style.background = state.topbarColor || '#ffffff';
-            document.querySelector('.bottombar').style.background = state.bottombarColor || '#ffffff';
-            document.documentElement.style.setProperty('--topbar-bg', state.topbarColor || '#ffffff');
-            document.documentElement.style.setProperty('--bottombar-bg', state.bottombarColor || '#ffffff');
-        }
-
-        const chatArea = document.getElementById('chatArea');
-        const msgInput = document.getElementById('msgInput');
-        const btnSend = document.getElementById('btnSend');
-        const btnEmoji = document.getElementById('btnEmoji');
-        const btnSettings = document.getElementById('btnSettings');
-        const btnWordCards = document.getElementById('btnWordCards');
-        const overlayContainer = document.getElementById('overlayContainer');
-        const quoteBar = document.getElementById('quoteBar');
-        const quotePreview = document.getElementById('quotePreview');
-        const cancelQuote = document.getElementById('cancelQuote');
-        const otherAvatarImg = document.getElementById('otherAvatar');
-        const otherNameEl = document.getElementById('otherName');
-        const otherStatusEl = document.getElementById('otherStatus');
-        const hiddenFileInput = document.getElementById('hiddenFileInput');
-        const hiddenJsonInput = document.getElementById('hiddenJsonInput');
-        const hiddenBgInput = document.getElementById('hiddenBgInput');
-        const hiddenEmojiInput = document.getElementById('hiddenEmojiInput');
-
-        let pendingReplyTimer = null;
-        let typingIndicatorEl = null;
-        let isTyping = false;
-        let pendingReplyCount = 0;
-        let fileCallback = null;
-        let bgCallback = null;
-        let emojiCallback = null;
-        let statusChangeTimer = null;
-
-        function formatTime(ts) { const d=new Date(ts); const pad=n=>String(n).padStart(2,'0'); return `${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`; }
-        function scrollToBottom() { requestAnimationFrame(()=>{ chatArea.scrollTop = chatArea.scrollHeight; }); }
-
-        async function loadMessages() {
-            chatArea.innerHTML = '';
-            const msgs = await dbGetAll('messages');
-            msgs.sort((a,b) => a.timestamp - b.timestamp);
-            for (const m of msgs) appendMsgToDOM(m, false);
-            scrollToBottom();
-            updateOtherUI();
-        }
-        function appendMsgToDOM(msg, animate=true) {
-            const row = document.createElement('div');
-            row.className = `msg-row ${msg.sender==='me'?'me':'other'}`;
-            row.dataset.msgId = msg.id;
-            const bubble = document.createElement('div');
-            bubble.className = 'msg-bubble';
-            if (msg.quoteId) {
-                const qp = document.createElement('div');
-                qp.className = 'quote-preview';
-                qp.textContent = (msg.quotePreview || '引用消息') + '';
-                bubble.appendChild(qp);
+        maxSlider.oninput=function(){
+            document.getElementById('maxVal').textContent=this.value;
+            document.getElementById('maxVal2').textContent=this.value+'s';
+            if(+minSlider.value>+this.value){minSlider.value=this.value;document.getElementById('minVal').textContent=this.value;document.getElementById('minVal2').textContent=this.value+'s';}
+        };
+        const saveReply=async()=>{
+            state.minReplySec=+minSlider.value;
+            state.maxReplySec=+maxSlider.value;
+            await saveSetting('minReplySec',state.minReplySec);
+            await saveSetting('maxReplySec',state.maxReplySec);
+        };
+        minSlider.onchange=saveReply;
+        maxSlider.onchange=saveReply;
+        document.getElementById('setOtherName').onchange=async function(){state.otherName=this.value;await saveSetting('otherName',this.value);otherNameEl.textContent=this.value;};
+        document.getElementById('setOtherStatus').onchange=async function(){state.otherStatus=this.value;await saveSetting('otherStatus',this.value);otherStatusEl.textContent=this.value;};
+        document.getElementById('addStatusWord').onclick=async()=>{
+            const w=document.getElementById('newStatusWord').value.trim();
+            if(w&&!state.statusWords.includes(w)){state.statusWords.push(w);await saveSetting('statusWords',state.statusWords);closePanel();openSettingsPanel();}
+        };
+        document.getElementById('statusChips').onclick=async(e)=>{
+            const idx=e.target.dataset.delidx;
+            if(idx!==undefined){state.statusWords.splice(+idx,1);await saveSetting('statusWords',state.statusWords);closePanel();openSettingsPanel();}
+        };
+        document.getElementById('topbarColorInput').oninput=async function(){await saveSetting('topbarColor',this.value)};
+        document.getElementById('bottombarColorInput').oninput=async function(){await saveSetting('bottombarColor',this.value)};
+        document.getElementById('btnPickBg').onclick=()=>{bgCallback=async(url)=>{await saveSetting('bgImage',url);closePanel();openSettingsPanel()};hiddenBgInput.click()};
+        document.getElementById('btnClearBg').onclick=async()=>{await saveSetting('bgImage',null);closePanel();openSettingsPanel()};
+        document.getElementById('btnOtherAvatar').onclick=()=>{fileCallback=async(url)=>{state.otherAvatar=url;await saveSetting('otherAvatar',url);updateOtherUI();closePanel();openSettingsPanel()};hiddenFileInput.click()};
+        document.getElementById('btnMyAvatar').onclick=()=>{fileCallback=async(url)=>{state.myAvatar=url;await saveSetting('myAvatar',url);closePanel();openSettingsPanel()};hiddenFileInput.click()};
+        document.getElementById('btnExportAll').onclick=exportAll;
+        document.getElementById('btnImportAll').onclick=()=>hiddenJsonInput.click();
+        document.getElementById('btnClearAll').onclick=async()=>{
+            if(confirm('清除所有数据？')){
+                await dbClear('messages');await dbClear('settings');await dbClear('wordCardGroups');
+                await dbClear('userStickers');await dbClear('otherStickers');await dbClear('pendingTasks');
+                state.bgImage=null;state.otherAvatar=null;state.myAvatar=null;state.topbarColor='#ffffff';state.bottombarColor='#ffffff';
+                state.activeWordCardGroupIds=[];state.autoSendLetter=false;
+                applySkin();await loadMessages();updateOtherUI();closePanel();
             }
-            if (msg.type === 'sticker') {
-                const img = document.createElement('img');
-                img.className = 'sticker-msg';
-                img.src = msg.content;
-                bubble.appendChild(img);
-            } else {
-                bubble.textContent = msg.content;
-            }
-            row.appendChild(bubble);
-            const timeDiv = document.createElement('div');
-            timeDiv.className = 'msg-time';
-            timeDiv.textContent = formatTime(msg.timestamp);
-            row.appendChild(timeDiv);
-            if (msg.sender==='me' && msg.status) {
-                const statusDiv = document.createElement('div');
-                statusDiv.className = 'msg-status';
-                statusDiv.textContent = msg.status==='read'?'已读':'已发送';
-                row.appendChild(statusDiv);
-            }
-            row.addEventListener('click', (e) => { e.stopPropagation(); showMsgMenu(row, msg); });
-            if (!animate) row.style.animation = 'none';
-            chatArea.appendChild(row);
-        }
-        function updateMsgStatus(msgId, status) {
-            const row = chatArea.querySelector(`[data-msg-id="${msgId}"]`);
-            if (!row) return;
-            let statusDiv = row.querySelector('.msg-status');
-            if (!statusDiv) { statusDiv = document.createElement('div'); statusDiv.className = 'msg-status'; row.appendChild(statusDiv); }
-            statusDiv.textContent = status==='read'?'已读':'已发送';
-        }
-        async function addMessage(sender, content, type='text', quoteId=null, quotePreview=null) {
-            const msg = { sender, content, type, timestamp: Date.now(), status: sender==='me'?'sent':undefined, quoteId, quotePreview };
-            const id = await dbPut('messages', msg);
-            msg.id = id;
-            appendMsgToDOM(msg, true);
-            scrollToBottom();
-            return msg;
-        }
+        };
+    },100);
+}
 
-        async function getQuotePreview(msgId) {
-            const all = await dbGetAll('messages');
-            const m = all.find(x=>x.id===msgId);
-            if (!m) return '';
-            return m.type==='sticker'?'[表情包]':(m.content||'').slice(0,30);
-        }
+function updateOtherUI(){
+    otherAvatarImg.src=state.otherAvatar?.startsWith('data:')?state.otherAvatar:otherAvatarImg.src;
+    otherNameEl.textContent=state.otherName||'Satoru';
+    otherStatusEl.textContent=state.otherStatus||'在线';
+}
 
-        function showMsgMenu(row, msg) {
-            const old = document.querySelector('.msg-action-menu');
-            if (old) old.remove();
-            const menu = document.createElement('div');
-            menu.className = 'msg-action-menu';
-            menu.style.position = 'absolute';
-            menu.style.background = '#fff';
-            menu.style.borderRadius = '12px';
-            menu.style.boxShadow = '0 8px 30px rgba(0,0,0,0.18)';
-            menu.style.zIndex = '30';
-            menu.style.padding = '6px 0';
-            menu.style.minWidth = '120px';
-            menu.style.animation = 'fadeIn 0.15s ease';
-            const rect = row.getBoundingClientRect();
-            const appRect = document.getElementById('app').getBoundingClientRect();
-            menu.style.top = Math.min(rect.top - appRect.top - 10, appRect.height - 160) + 'px';
-            menu.style.left = (msg.sender==='me'? (rect.right - appRect.left - 130) : (rect.left - appRect.left)) + 'px';
-            const btnQuote = document.createElement('button');
-            btnQuote.textContent = '💬 引用回复';
-            btnQuote.style.cssText = 'display:block;width:100%;padding:10px 16px;border:none;background:none;font-size:14px;text-align:left;cursor:pointer;';
-            btnQuote.onclick = async () => {
-                state.quoteMsgId = msg.id;
-                quotePreview.textContent = '引用: ' + (msg.type==='sticker'?'[表情包]':(msg.content||'').slice(0,30));
-                quoteBar.style.display = 'flex';
-                menu.remove();
-                msgInput.focus();
-            };
-            menu.appendChild(btnQuote);
-            if (msg.sender==='other') {
-                const btnDel = document.createElement('button');
-                btnDel.textContent = '🗑 删除';
-                btnDel.style.cssText = 'display:block;width:100%;padding:10px 16px;border:none;background:none;font-size:14px;text-align:left;cursor:pointer;color:#e05555;';
-                btnDel.onclick = async () => { await dbDelete('messages', msg.id); row.remove(); menu.remove(); };
-                menu.appendChild(btnDel);
-            }
-            document.getElementById('app').appendChild(menu);
-            const close = (e) => { if (!menu.contains(e.target)) { menu.remove(); document.removeEventListener('click',close); } };
-            setTimeout(()=> document.addEventListener('click',close), 50);
-        }
+// ============ 字卡板块（多分组同时生效） ============
+async function openWordCardsPanel(){
+    const groups=await dbGetAll('wordCardGroups');
+    const activeIds=state.activeWordCardGroupIds||[];
+    let groupsHtml='';
+    for(const g of groups){
+        const active=activeIds.includes(g.id);
+        groupsHtml+=`<div class="wordcard-item" style="${active?'border:2px solid var(--accent);background:#e8f2fc;':''}">
+            <span>${escHtml(g.name||'未命名')} (${g.cards?.length||0}条) ${active?'✅':''}</span>
+            <button class="btn btn-smaller btn-outline selectGroupBtn" data-gid="${g.id}">${active?'取消':'启用'}</button>
+            <button class="btn btn-smaller btn-danger delGroupBtn" data-gid="${g.id}">删</button>
+        </div>`;
+    }
+    const html=`
+    <button class="close-btn">✕</button><h3>🃏 字卡板块</h3>
+    <p style="font-size:12px;color:#888;text-align:center;margin-bottom:8px;">可同时启用多个分组（蓝色为已启用）</p>
+    <div style="max-height:180px;overflow-y:auto;">${groupsHtml||'<p>暂无分组</p>'}</div>
+    <label>新分组</label><input type="text" id="newGroupName" placeholder="名称"><button class="btn btn-primary btn-smaller" id="btnCreateGroup">创建</button>
+    <hr><label>向选中分组批量导入(换行分隔，自动查重)</label><textarea id="batchCardsInput"></textarea>
+    <button class="btn btn-primary btn-smaller" id="btnBatchImport">批量导入</button>
+    <button class="btn btn-outline btn-smaller" id="btnJsonImport">📄 JSON导入</button>
+    <hr><label>选择分组管理字卡</label>
+    <select id="groupSelect">${groups.map(g=>`<option value="${g.id}">${escHtml(g.name||'未命名')} (${g.cards?.length||0})</option>`).join('')}</select>
+    <div id="cardsPreview" style="max-height:150px;overflow-y:auto;"></div>
+    <button class="btn btn-danger btn-smaller" id="btnClearGroupCards">清空此分组</button>
+    <hr><label>导出当前分组字卡（纯内容）</label>
+    <button class="btn btn-outline btn-smaller" id="btnExportGroupCards">📤 导出字卡</button>
+    <button class="btn btn-outline btn-smaller" id="btnExportAllCards">📤 导出所有字卡</button>
+    <hr><h4>对方表情包库（随机发送）</h4>
+    <div class="sticker-grid" id="otherStickerGrid"></div>
+    <button class="btn btn-smaller btn-outline" id="btnAddOtherSticker">📷 导入表情</button>
+    <button class="btn btn-smaller btn-danger" id="btnClearOtherStickers">清空</button>
+    `;
+    openPanel(html);
+    setTimeout(()=>bindWordCardEvents(groups),100);
+}
 
-        // 回复逻辑
-        async function handleUserMessage(msg) {
-            pendingReplyCount++;
-            const readDelay = 1000 + Math.random() * 2000;
-            setTimeout(async () => {
-                updateMsgStatus(msg.id, 'read');
-                const all = await dbGetAll('messages');
-                const found = all.find(m=>m.id===msg.id);
-                if (found && found.status!=='read') { found.status='read'; await dbPut('messages', found); }
-                pendingReplyCount--;
-                if (pendingReplyCount === 0) scheduleReply();
-            }, readDelay);
-            if (pendingReplyCount === 1) scheduleReply(); // 第一条消息时启动定时器
-        }
-
-        function scheduleReply() {
-            if (pendingReplyTimer) clearTimeout(pendingReplyTimer);
-            if (pendingReplyCount > 0) return;
-            const minSec = Math.max(0, Math.min(30, state.minReplySec||2));
-            const maxSec = Math.max(minSec, Math.min(120, state.maxReplySec||15));
-            const delay = (minSec + Math.random() * (maxSec - minSec)) * 1000;
-            pendingReplyTimer = setTimeout(executeReply, delay);
-        }
-
-        async function executeReply() {
-            if (pendingReplyCount > 0) return;
-            showTyping();
-            const typingDuration = 1000 + Math.random() * 2000;
-            await sleep(typingDuration);
-            hideTyping();
-            const pool = await buildReplyPool();
-            if (pool.length === 0) {
-                await addMessage('other', '嗯嗯~', 'text');
-                scrollToBottom();
-                return;
-            }
-            const count = Math.floor(Math.random()*3)+1;
-            const chosen = [];
-            const temp = [...pool];
-            for (let i=0; i<count && temp.length>0; i++) {
-                const idx = Math.floor(Math.random()*temp.length);
-                chosen.push(temp.splice(idx,1)[0]);
-            }
-            for (let i=0; i<chosen.length; i++) {
-                const item = chosen[i];
-                await addMessage('other', item.content, item.type);
-                scrollToBottom();
-                if (i < chosen.length-1) await sleep(800 + Math.random()*2000);
-            }
-        }
-
-        async function buildReplyPool() {
-            const pool = [];
-            const gid = state.activeWordCardGroupId;
-            if (gid) {
-                const group = await dbGet('wordCardGroups', gid);
-                if (group?.cards) group.cards.forEach(c => pool.push({type:'text', content:c}));
-            } else {
-                const allGroups = await dbGetAll('wordCardGroups');
-                const texts = new Set();
-                allGroups.forEach(g => g.cards?.forEach(c => texts.add(c)));
-                texts.forEach(c => pool.push({type:'text', content:c}));
-            }
-            const stickers = await dbGetAll('otherStickers');
-            stickers.forEach(s => pool.push({type:'sticker', content:s.dataUrl}));
-            return pool;
-        }
-
-        function showTyping() {
-            if (isTyping) return;
-            isTyping = true;
-            typingIndicatorEl = document.createElement('div');
-            typingIndicatorEl.className = 'typing-indicator';
-            typingIndicatorEl.innerHTML = '对方输入中 <span class="typing-dots"><span></span><span></span><span></span></span>';
-            chatArea.appendChild(typingIndicatorEl);
-            scrollToBottom();
-        }
-        function hideTyping() {
-            isTyping = false;
-            if (typingIndicatorEl?.parentNode) typingIndicatorEl.parentNode.removeChild(typingIndicatorEl);
-            typingIndicatorEl = null;
-        }
-        function sleep(ms) { return new Promise(r=>setTimeout(r,ms)); }
-
-        // 状态随机更换
-        function startStatusRandomizer() {
-            if (statusChangeTimer) clearTimeout(statusChangeTimer);
-            const change = async () => {
-                if (state.statusWords.length === 0) return;
-                const newStatus = state.statusWords[Math.floor(Math.random()*state.statusWords.length)];
-                if (newStatus !== state.otherStatus) {
-                    state.otherStatus = newStatus;
-                    await saveSetting('otherStatus', newStatus);
-                    otherStatusEl.textContent = newStatus;
-                }
-                const next = (10 + Math.random() * 50) * 60 * 1000; // 10-60分钟
-                statusChangeTimer = setTimeout(change, next);
-            };
-            statusChangeTimer = setTimeout(change, 10000);
-        }
-
-        // UI 面板
-        function openPanel(html) {
-            overlayContainer.innerHTML = '';
-            const overlay = document.createElement('div');
-            overlay.className = 'overlay';
-            const panel = document.createElement('div');
-            panel.className = 'panel';
-            panel.innerHTML = html;
-            overlay.appendChild(panel);
-            overlay.addEventListener('click', (e) => { if (e.target===overlay) closePanel(); });
-            overlayContainer.appendChild(overlay);
-            panel.querySelector('.close-btn')?.addEventListener('click', closePanel);
-        }
-        function closePanel() { overlayContainer.innerHTML = ''; }
-
-        function openSettingsPanel() {
-            const minSec = state.minReplySec||2, maxSec = state.maxReplySec||15;
-            const html = `
-            <button class="close-btn">✕</button><h3>⚙️ 设置</h3>
-            <label>对方名字</label><input type="text" id="setOtherName" value="${escHtml(state.otherName)}">
-            <label>对方状态</label><select id="setOtherStatus">${state.statusWords.map(w=>`<option ${w===state.otherStatus?'selected':''}>${escHtml(w)}</option>`).join('')}</select>
-            <label>状态词管理</label><div class="chip-row" id="statusChips">${state.statusWords.map((w,i)=>`<span class="chip">${escHtml(w)}<small style="color:#e05555;cursor:pointer;" data-delidx="${i}">×</small></span>`).join('')}</div>
-            <input type="text" id="newStatusWord" placeholder="新状态词" style="width:70%"><button class="btn btn-smaller btn-primary" id="addStatusWord">+</button>
-            <label>最快回复(秒) <span id="minVal">${minSec}</span>s</label>
-            <div class="slider-group"><input type="range" id="minReplySlider" min="0" max="30" value="${minSec}" step="1"><span class="val">${minSec}s</span></div>
-            <label>最慢回复(秒) <span id="maxVal">${maxSec}</span>s</label>
-            <div class="slider-group"><input type="range" id="maxReplySlider" min="0" max="120" value="${maxSec}" step="1"><span class="val">${maxSec}s</span></div>
-            <label>顶栏颜色</label><input type="color" id="topbarColorInput" value="${state.topbarColor||'#ffffff'}">
-            <label>底栏颜色</label><input type="color" id="bottombarColorInput" value="${state.bottombarColor||'#ffffff'}">
-            <label>背景图</label><button class="btn btn-outline btn-smaller" id="btnPickBg">📷 选择</button><button class="btn btn-smaller btn-danger" id="btnClearBg">清除</button>
-            <hr><label>对方头像</label><button class="btn btn-outline btn-smaller" id="btnOtherAvatar">📷 选择</button>
-            <label>我的头像</label><button class="btn btn-outline btn-smaller" id="btnMyAvatar">📷 选择</button>
-            <hr><button class="btn btn-primary" id="btnExportAll">📤 导出全部数据</button>
-            <button class="btn btn-outline" id="btnImportAll">📥 导入全部数据</button>
-            <button class="btn btn-danger btn-smaller" id="btnClearAll">⚠️ 清除所有</button>
-            `;
-            openPanel(html);
-            setTimeout(()=>{
-                document.getElementById('minReplySlider').oninput = function() {
-                    document.getElementById('minVal').textContent=this.value;
-                    this.nextElementSibling.textContent=this.value+'s';
-                    if (+document.getElementById('maxReplySlider').value < +this.value) {
-                        document.getElementById('maxReplySlider').value=this.value;
-                        document.getElementById('maxVal').textContent=this.value;
-                        document.getElementById('maxReplySlider').nextElementSibling.textContent=this.value+'s';
-                    }
-                };
-                document.getElementById('maxReplySlider').oninput = function() {
-                    document.getElementById('maxVal').textContent=this.value;
-                    this.nextElementSibling.textContent=this.value+'s';
-                    if (+document.getElementById('minReplySlider').value > +this.value) {
-                        document.getElementById('minReplySlider').value=this.value;
-                        document.getElementById('minVal').textContent=this.value;
-                        document.getElementById('minReplySlider').nextElementSibling.textContent=this.value+'s';
-                    }
-                };
-                document.getElementById('minReplySlider').onchange = saveReplySettings;
-                document.getElementById('maxReplySlider').onchange = saveReplySettings;
-                document.getElementById('setOtherName').onchange = async function(){ state.otherName=this.value; await saveSetting('otherName',this.value); otherNameEl.textContent=this.value; };
-                document.getElementById('setOtherStatus').onchange = async function(){ state.otherStatus=this.value; await saveSetting('otherStatus',this.value); otherStatusEl.textContent=this.value; };
-                document.getElementById('addStatusWord').onclick = async ()=>{
-                    const w = document.getElementById('newStatusWord').value.trim();
-                    if(w && !state.statusWords.includes(w)){ state.statusWords.push(w); await saveSetting('statusWords',state.statusWords); closePanel(); openSettingsPanel(); }
-                };
-                document.getElementById('statusChips').onclick = async (e)=>{
-                    const idx = e.target.dataset.delidx;
-                    if(idx!==undefined){ state.statusWords.splice(+idx,1); await saveSetting('statusWords',state.statusWords); closePanel(); openSettingsPanel(); }
-                };
-                document.getElementById('topbarColorInput').oninput = async function(){ await saveSetting('topbarColor',this.value); };
-                document.getElementById('bottombarColorInput').oninput = async function(){ await saveSetting('bottombarColor',this.value); };
-                document.getElementById('btnPickBg').onclick = ()=>{ bgCallback = async (url)=>{ await saveSetting('bgImage',url); closePanel(); openSettingsPanel(); }; hiddenBgInput.click(); };
-                document.getElementById('btnClearBg').onclick = async ()=>{ await saveSetting('bgImage',null); closePanel(); openSettingsPanel(); };
-                document.getElementById('btnOtherAvatar').onclick = ()=>{ fileCallback = async (url)=>{ state.otherAvatar=url; await saveSetting('otherAvatar',url); updateOtherUI(); closePanel(); openSettingsPanel(); }; hiddenFileInput.click(); };
-                document.getElementById('btnMyAvatar').onclick = ()=>{ fileCallback = async (url)=>{ state.myAvatar=url; await saveSetting('myAvatar',url); closePanel(); openSettingsPanel(); }; hiddenFileInput.click(); };
-                document.getElementById('btnExportAll').onclick = exportAll;
-                document.getElementById('btnImportAll').onclick = ()=> hiddenJsonInput.click();
-                document.getElementById('btnClearAll').onclick = async ()=>{
-                    if(confirm('清除所有数据？')){ await dbClear('messages'); await dbClear('settings'); await dbClear('wordCardGroups'); await dbClear('userStickers'); await dbClear('otherStickers'); state.bgImage=null; state.otherAvatar=null; state.myAvatar=null; state.topbarColor='#ffffff'; state.bottombarColor='#ffffff'; applySkin(); await loadMessages(); updateOtherUI(); closePanel(); }
-                };
-            },100);
-        }
-        async function saveReplySettings(){
-            state.minReplySec = +document.getElementById('minReplySlider').value;
-            state.maxReplySec = +document.getElementById('maxReplySlider').value;
-            await saveSetting('minReplySec', state.minReplySec);
-            await saveSetting('maxReplySec', state.maxReplySec);
-        }
-
-        function updateOtherUI(){
-            otherAvatarImg.src = state.otherAvatar?.startsWith('data:') ? state.otherAvatar : otherAvatarImg.src;
-            otherNameEl.textContent = state.otherName || 'Satoru';
-            otherStatusEl.textContent = state.otherStatus || '在线';
-        }
-
-        async function openWordCardsPanel(){
-            const groups = await dbGetAll('wordCardGroups');
-            let groupsHtml = '';
-            for(const g of groups){
-                const active = g.id===state.activeWordCardGroupId;
-                groupsHtml += `<div class="wordcard-item" style="${active?'border:2px solid var(--accent);background:#e8f2fc;':''}">
-                    <span>${escHtml(g.name||'未命名')} (${g.cards?.length||0})</span>
-                    <button class="btn btn-smaller btn-outline selectGroupBtn" data-gid="${g.id}">${active?'✅使用中':'选择'}</button>
-                    <button class="btn btn-smaller btn-danger delGroupBtn" data-gid="${g.id}">删</button>
-                </div>`;
-            }
-            const html = `
-            <button class="close-btn">✕</button><h3>🃏 字卡板块</h3>
-            <div style="max-height:180px;overflow-y:auto;">${groupsHtml||'<p>暂无分组</p>'}</div>
-            <label>新分组</label><input type="text" id="newGroupName" placeholder="名称"><button class="btn btn-primary btn-smaller" id="btnCreateGroup">创建</button>
-            <hr><label>向选中分组批量导入(换行分隔)</label><textarea id="batchCardsInput"></textarea>
-            <button class="btn btn-primary btn-smaller" id="btnBatchImport">批量导入(自动查重)</button>
-            <button class="btn btn-outline btn-smaller" id="btnJsonImport">📄 JSON导入</button>
-            <button class="btn btn-outline btn-smaller" id="btnExportCards">📤 导出当前分组字卡</button>
-            <hr><label>管理分组字卡</label>
-            <select id="groupSelect">${groups.map(g=>`<option value="${g.id}">${escHtml(g.name||'未命名')}</option>`).join('')}</select>
-            <div id="cardsPreview" style="max-height:150px;overflow-y:auto;"></div>
-            <button class="btn btn-danger btn-smaller" id="btnClearGroupCards">清空此分组</button>
-            <hr><h4>对方表情包库</h4>
-            <div class="sticker-grid" id="otherStickerGrid"></div>
-            <button class="btn btn-smaller btn-outline" id="btnAddOtherSticker">📷 导入表情</button>
-            <button class="btn btn-smaller btn-danger" id="btnClearOtherStickers">清空</button>
-            `;
-            openPanel(html);
-            setTimeout(()=> bindWordCardEvents(groups), 100);
-        }
-
-        async function bindWordCardEvents(groups){
-            document.getElementById('btnCreateGroup')?.addEventListener('click', async ()=>{
-                const name = document.getElementById('newGroupName').value.trim();
-                if(!name) return;
-                await dbPut('wordCardGroups', {name, cards:[]});
-                closePanel(); openWordCardsPanel();
-            });
-            document.getElementById('btnBatchImport')?.addEventListener('click', async ()=>{
-                const raw = document.getElementById('batchCardsInput').value;
-                const lines = raw.split(/[\n\r]+/).map(l=>l.trim()).filter(l=>l);
-                if(!lines.length) return;
-                const gid = state.activeWordCardGroupId;
-                if(!gid) { alert('请先选择一个分组'); return; }
-                const group = await dbGet('wordCardGroups', gid);
-                if(!group) return;
-                const set = new Set(group.cards||[]);
-                let added=0;
-                lines.forEach(l=>{ if(!set.has(l)){ set.add(l); added++; } });
-                group.cards = [...set];
-                await dbPut('wordCardGroups', group);
-                alert(`新增${added}条，跳过${lines.length-added}条重复`);
-                closePanel(); openWordCardsPanel();
-            });
-            document.getElementById('btnJsonImport')?.addEventListener('click', ()=>{
-                hiddenJsonInput.click();
-                hiddenJsonInput.onchange = async (e)=>{
-                    const file = e.target.files[0]; if(!file) return;
-                    try{
-                        const text = await file.text();
-                        const data = JSON.parse(text);
-                        const gid = state.activeWordCardGroupId;
-                        if(!gid) { alert('请先选择一个分组'); return; }
-                        const group = await dbGet('wordCardGroups', gid);
-                        if(!group) return;
-                        let arr = [];
-                        if(Array.isArray(data)) arr = data.map(String);
-                        else if(data.cards) arr = data.cards.map(String);
-                        else arr = Object.values(data).map(String);
-                        const set = new Set(group.cards||[]);
-                        let added=0;
-                        arr.forEach(s=>{ const t=String(s).trim(); if(t&&!set.has(t)){ set.add(t); added++; } });
-                        group.cards = [...set];
-                        await dbPut('wordCardGroups', group);
-                        alert(`JSON导入${added}条`);
-                        closePanel(); openWordCardsPanel();
-                    }catch(err){ alert('JSON解析失败'); }
-                    hiddenJsonInput.value='';
-                };
-            });
-            document.getElementById('btnExportCards')?.addEventListener('click', async ()=>{
-                const gid = state.activeWordCardGroupId;
-                if(!gid) { alert('请先选择一个分组'); return; }
-                const group = await dbGet('wordCardGroups', gid);
-                if(!group) return;
-                const blob = new Blob([JSON.stringify({name:group.name, cards:group.cards},null,2)],{type:'application/json'});
-                const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `wordcards_${group.name||'group'}.json`; a.click();
-            });
-            document.querySelectorAll('.selectGroupBtn').forEach(b=> b.onclick = async ()=>{
-                const gid = +b.dataset.gid;
-                state.activeWordCardGroupId = gid;
-                await saveSetting('activeWordCardGroupId', gid);
-                closePanel(); openWordCardsPanel();
-            });
-            document.querySelectorAll('.delGroupBtn').forEach(b=> b.onclick = async ()=>{
-                if(confirm('删除分组？')){
-                    await dbDelete('wordCardGroups', +b.dataset.gid);
-                    if(state.activeWordCardGroupId === +b.dataset.gid){ state.activeWordCardGroupId=null; await saveSetting('activeWordCardGroupId',null); }
-                    closePanel(); openWordCardsPanel();
-                }
-            });
-            const groupSelect = document.getElementById('groupSelect');
-            const previewDiv = document.getElementById('cardsPreview');
-            const renderCards = async ()=>{
-                const gid = +groupSelect.value;
-                const group = await dbGet('wordCardGroups', gid);
-                previewDiv.innerHTML = group?.cards?.map((c,i)=>`<div class="wordcard-item"><span>${escHtml(c)}</span><button class="btn btn-smaller btn-danger delCardBtn" data-gid="${gid}" data-idx="${i}">×</button></div>`).join('')||'';
-                document.querySelectorAll('.delCardBtn').forEach(b=> b.onclick = async ()=>{
-                    const gid=+b.dataset.gid, idx=+b.dataset.idx;
-                    const grp = await dbGet('wordCardGroups', gid);
-                    if(grp){ grp.cards.splice(idx,1); await dbPut('wordCardGroups', grp); renderCards(); }
-                });
-            };
-            groupSelect.onchange = renderCards;
-            renderCards();
-            document.getElementById('btnClearGroupCards').onclick = async ()=>{
-                const gid = +groupSelect.value;
-                if(confirm('清空？')){ const grp=await dbGet('wordCardGroups',gid); if(grp){grp.cards=[]; await dbPut('wordCardGroups',grp); renderCards();} }
-            };
-            // 对方表情包库
-            const otherStickerGrid = document.getElementById('otherStickerGrid');
-            const renderOtherStickers = async ()=>{
-                const stickers = await dbGetAll('otherStickers');
-                otherStickerGrid.innerHTML = stickers.map(s=>`<img src="${s.dataUrl}" class="other-sticker-item" data-id="${s.id}">`).join('') + `<div class="add-sticker-btn" id="addOtherStickerBtn">+</div>`;
-                document.querySelectorAll('.other-sticker-item').forEach(img=> img.onclick = async ()=>{
-                    if(confirm('删除此表情？')){ await dbDelete('otherStickers', +img.dataset.id); renderOtherStickers(); }
-                });
-                document.getElementById('addOtherStickerBtn').onclick = ()=>{
-                    emojiCallback = async (urls)=>{ for(const u of urls){ await dbPut('otherStickers',{dataUrl:u}); } renderOtherStickers(); };
-                    hiddenEmojiInput.click();
-                };
-            };
-            renderOtherStickers();
-            document.getElementById('btnAddOtherSticker').onclick = ()=>{ emojiCallback = async (urls)=>{ for(const u of urls){ await dbPut('otherStickers',{dataUrl:u}); } renderOtherStickers(); }; hiddenEmojiInput.click(); };
-            document.getElementById('btnClearOtherStickers').onclick = async ()=>{ if(confirm('清空对方表情库？')){ await dbClear('otherStickers'); renderOtherStickers(); } };
-        }
-
-        async function openEmojiPanel(){
-            const stickers = await dbGetAll('userStickers');
-            let grid = stickers.map(s=>`<img src="${s.dataUrl}" class="user-sticker-item" data-url="${s.dataUrl}">`).join('');
-            grid += `<div class="add-sticker-btn" id="addUserStickerBtn">+</div>`;
-            const html = `<button class="close-btn">✕</button><h3>😊 我的表情包</h3><div class="sticker-grid" id="userStickerGrid">${grid}</div><button class="btn btn-smaller btn-danger" id="btnClearUserStickers">清空</button>`;
-            openPanel(html);
-            setTimeout(()=>{
-                document.querySelectorAll('.user-sticker-item').forEach(img=> img.onclick = async ()=>{
-                    const url = img.dataset.url;
-                    await sendSticker(url);
-                    closePanel();
-                });
-                document.getElementById('addUserStickerBtn').onclick = ()=>{
-                    emojiCallback = async (urls)=>{ for(const u of urls){ await dbPut('userStickers',{dataUrl:u}); } closePanel(); openEmojiPanel(); };
-                    hiddenEmojiInput.click();
-                };
-                document.getElementById('btnClearUserStickers').onclick = async ()=>{
-                    if(confirm('清空？')){ await dbClear('userStickers'); closePanel(); openEmojiPanel(); }
-                };
-            },100);
-        }
-
-        async function sendSticker(url){
-            const msg = await addMessage('me', url, 'sticker', state.quoteMsgId||null, state.quoteMsgId? await getQuotePreview(state.quoteMsgId):null);
-            state.quoteMsgId = null; quoteBar.style.display='none';
-            handleUserMessage(msg);
-        }
-
-        async function sendMessage(){
-            const content = msgInput.value.trim();
-            if(!content) return;
-            msgInput.value = ''; msgInput.style.height='auto';
-            const quoteId = state.quoteMsgId||null;
-            const quotePrev = quoteId ? await getQuotePreview(quoteId) : null;
-            const msg = await addMessage('me', content, 'text', quoteId, quotePrev);
-            state.quoteMsgId = null; quoteBar.style.display='none';
-            handleUserMessage(msg);
-        }
-
-        async function exportAll(){
-            const data = {
-                settings: await dbGetAll('settings'),
-                messages: await dbGetAll('messages'),
-                wordCardGroups: await dbGetAll('wordCardGroups'),
-                userStickers: await dbGetAll('userStickers'),
-                otherStickers: await dbGetAll('otherStickers'),
-            };
-            const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `LoveSatoru_backup_${new Date().toISOString().slice(0,10)}.json`; a.click();
-        }
-
-        async function importAll(jsonText){
+async function bindWordCardEvents(groups){
+    document.getElementById('btnCreateGroup')?.addEventListener('click',async()=>{
+        const name=document.getElementById('newGroupName').value.trim();
+        if(!name)return;
+        await dbPut('wordCardGroups',{name,cards:[]});
+        closePanel();openWordCardsPanel();
+    });
+    document.getElementById('btnBatchImport')?.addEventListener('click',async()=>{
+        const raw=document.getElementById('batchCardsInput').value;
+        const lines=raw.split(/[\n\r]+/).map(l=>l.trim()).filter(l=>l);
+        if(!lines.length)return;
+        const gid=state.activeWordCardGroupIds[0];
+        if(!gid){alert('请先启用一个分组');return;}
+        const group=await dbGet('wordCardGroups',gid);
+        if(!group)return;
+        const set=new Set(group.cards||[]);
+        let added=0;
+        lines.forEach(l=>{if(!set.has(l)){set.add(l);added++;}});
+        group.cards=[...set];
+        await dbPut('wordCardGroups',group);
+        alert(`新增${added}条，跳过${lines.length-added}条重复`);
+        closePanel();openWordCardsPanel();
+    });
+    document.getElementById('btnJsonImport')?.addEventListener('click',()=>{
+        hiddenJsonInput.click();
+        hiddenJsonInput.onchange=async(e)=>{
+            const file=e.target.files[0];if(!file)return;
             try{
-                const data = JSON.parse(jsonText);
-                if(!confirm('导入将覆盖当前数据，确定？')) return;
-                await dbClear('settings'); await dbClear('messages'); await dbClear('wordCardGroups'); await dbClear('userStickers'); await dbClear('otherStickers');
-                for(const s of (data.settings||[])) await dbPut('settings',s);
-                for(const m of (data.messages||[])) await dbPut('messages',m);
-                for(const g of (data.wordCardGroups||[])) await dbPut('wordCardGroups',g);
-                for(const s of (data.userStickers||[])) await dbPut('userStickers',s);
-                for(const s of (data.otherStickers||[])) await dbPut('otherStickers',s);
-                state.bgImage=null; state.otherAvatar=null; state.myAvatar=null; state.activeWordCardGroupId=null;
-                await loadSettings(); await loadMessages(); updateOtherUI(); closePanel();
-                alert('导入成功');
-            }catch(e){ alert('导入失败'); }
+                const text=await file.text();
+                const data=JSON.parse(text);
+                const gid=state.activeWordCardGroupIds[0];
+                if(!gid){alert('请先启用一个分组');return;}
+                const group=await dbGet('wordCardGroups',gid);
+                if(!group)return;
+                let arr=[];
+                if(Array.isArray(data))arr=data.map(String);
+                else if(data.cards)arr=data.cards.map(String);
+                else arr=Object.values(data).map(String);
+                const set=new Set(group.cards||[]);
+                let added=0;
+                arr.forEach(s=>{const t=String(s).trim();if(t&&!set.has(t)){set.add(t);added++;}});
+                group.cards=[...set];
+                await dbPut('wordCardGroups',group);
+                alert(`JSON导入${added}条`);
+                closePanel();openWordCardsPanel();
+            }catch(err){alert('JSON解析失败')}
+            hiddenJsonInput.value='';
+        };
+    });
+    document.querySelectorAll('.selectGroupBtn').forEach(b=>b.onclick=async()=>{
+        const gid=+b.dataset.gid;
+        const idx=state.activeWordCardGroupIds.indexOf(gid);
+        if(idx>=0)state.activeWordCardGroupIds.splice(idx,1);
+        else state.activeWordCardGroupIds.push(gid);
+        await saveSetting('activeWordCardGroupIds',state.activeWordCardGroupIds);
+        closePanel();openWordCardsPanel();
+    });
+    document.querySelectorAll('.delGroupBtn').forEach(b=>b.onclick=async()=>{
+        if(confirm('删除分组？')){
+            const gid=+b.dataset.gid;
+            await dbDelete('wordCardGroups',gid);
+            const idx=state.activeWordCardGroupIds.indexOf(gid);
+            if(idx>=0){state.activeWordCardGroupIds.splice(idx,1);await saveSetting('activeWordCardGroupIds',state.activeWordCardGroupIds);}
+            closePanel();openWordCardsPanel();
         }
+    });
+    const groupSelect=document.getElementById('groupSelect');
+    const previewDiv=document.getElementById('cardsPreview');
+    const renderCards=async()=>{
+        if(!groupSelect)return;
+        const gid=+groupSelect.value;
+        const group=await dbGet('wordCardGroups',gid);
+        previewDiv.innerHTML=group?.cards?.map((c,i)=>`<div class="wordcard-item"><span style="flex:1;word-break:break-all;">${escHtml(c)}</span><button class="btn btn-smaller btn-danger delCardBtn" data-gid="${gid}" data-idx="${i}">×</button></div>`).join('')||'<p style="color:#888;padding:8px;">暂无字卡</p>';
+        document.querySelectorAll('.delCardBtn').forEach(b=>b.onclick=async()=>{
+            const gid=+b.dataset.gid,idx=+b.dataset.idx;
+            const grp=await dbGet('wordCardGroups',gid);
+            if(grp){grp.cards.splice(idx,1);await dbPut('wordCardGroups',grp);renderCards();}
+        });
+    };
+    groupSelect.onchange=renderCards;
+    renderCards();
+    document.getElementById('btnClearGroupCards').onclick=async()=>{
+        const gid=+groupSelect.value;
+        if(confirm('清空此分组字卡？')){const grp=await dbGet('wordCardGroups',gid);if(grp){grp.cards=[];await dbPut('wordCardGroups',grp);renderCards();}}
+    };
+    document.getElementById('btnExportGroupCards').onclick=async()=>{
+        const gid=+groupSelect.value;
+        const group=await dbGet('wordCardGroups',gid);
+        if(!group)return;
+        const blob=new Blob([JSON.stringify(group.cards||[],null,2)],{type:'application/json'});
+        const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`wordcards_${group.name||'group'}.json`;a.click();
+    };
+    document.getElementById('btnExportAllCards').onclick=async()=>{
+        const allGroups=await dbGetAll('wordCardGroups');
+        const allCards=[];
+        for(const g of allGroups){if(g.cards)allCards.push(...g.cards);}
+        const unique=[...new Set(allCards)];
+        const blob=new Blob([JSON.stringify(unique,null,2)],{type:'application/json'});
+        const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`all_wordcards.json`;a.click();
+    };
+    // 对方表情包库
+    const otherStickerGrid=document.getElementById('otherStickerGrid');
+    const renderOtherStickers=async()=>{
+        const stickers=await dbGetAll('otherStickers');
+        otherStickerGrid.innerHTML=stickers.map(s=>`<img src="${s.dataUrl}" class="other-sticker-item" data-id="${s.id}">`).join('')+`<div class="add-sticker-btn" id="addOtherStickerBtn">+</div>`;
+        document.querySelectorAll('.other-sticker-item').forEach(img=>img.onclick=async()=>{
+            if(confirm('删除此表情？')){await dbDelete('otherStickers',+img.dataset.id);renderOtherStickers();}
+        });
+        document.getElementById('addOtherStickerBtn').onclick=()=>{
+            emojiCallback=async(urls)=>{for(const u of urls){await dbPut('otherStickers',{dataUrl:u});}renderOtherStickers();};
+            hiddenEmojiInput.click();
+        };
+    };
+    renderOtherStickers();
+    document.getElementById('btnAddOtherSticker').onclick=()=>{
+        emojiCallback=async(urls)=>{for(const u of urls){await dbPut('otherStickers',{dataUrl:u});}renderOtherStickers();};
+        hiddenEmojiInput.click();
+    };
+    document.getElementById('btnClearOtherStickers').onclick=async()=>{if(confirm('清空对方表情库？')){await dbClear('otherStickers');renderOtherStickers();}};
+}
 
-        function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-        function readFileAsDataURL(file){ return new Promise((resolve,reject)=>{ const r=new FileReader(); r.onload=()=>resolve(r.result); r.onerror=reject; r.readAsDataURL(file); }); }
+// ============ 表情包面板 ============
+async function openEmojiPanel(){
+    const stickers=await dbGetAll('userStickers');
+    let grid=stickers.map(s=>`<img src="${s.dataUrl}" class="user-sticker-item" data-url="${s.dataUrl}">`).join('');
+    grid+=`<div class="add-sticker-btn" id="addUserStickerBtn">+</div>`;
+    const html=`<button class="close-btn">✕</button><h3>😊 我的表情包</h3><div class="sticker-grid" id="userStickerGrid">${grid}</div><button class="btn btn-smaller btn-danger" id="btnClearUserStickers">清空</button>`;
+    openPanel(html);
+    setTimeout(()=>{
+        document.querySelectorAll('.user-sticker-item').forEach(img=>img.onclick=async()=>{
+            const url=img.dataset.url;
+            await sendSticker(url);
+            closePanel();
+        });
+        document.getElementById('addUserStickerBtn').onclick=()=>{
+            emojiCallback=async(urls)=>{for(const u of urls){await dbPut('userStickers',{dataUrl:u});}closePanel();openEmojiPanel();};
+            hiddenEmojiInput.click();
+        };
+        document.getElementById('btnClearUserStickers').onclick=async()=>{if(confirm('清空？')){await dbClear('userStickers');closePanel();openEmojiPanel();}};
+    },100);
+}
 
-        // 事件绑定
-        btnSend.onclick = sendMessage;
-        msgInput.onkeydown = (e)=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendMessage(); } };
-        msgInput.oninput = ()=>{ msgInput.style.height='auto'; msgInput.style.height=Math.min(msgInput.scrollHeight,100)+'px'; };
-        btnEmoji.onclick = openEmojiPanel;
-        btnSettings.onclick = openSettingsPanel;
-        btnWordCards.onclick = openWordCardsPanel;
-        cancelQuote.onclick = ()=>{ state.quoteMsgId=null; quoteBar.style.display='none'; };
-        document.getElementById('avatarWrap').onclick = ()=>{ fileCallback = async (url)=>{ state.otherAvatar=url; await saveSetting('otherAvatar',url); updateOtherUI(); }; hiddenFileInput.click(); };
-        document.getElementById('infoArea').onclick = openSettingsPanel;
-        hiddenFileInput.onchange = async (e)=>{ const f=e.target.files[0]; if(f){ const url=await readFileAsDataURL(f); fileCallback?.(url); fileCallback=null; } hiddenFileInput.value=''; };
-        hiddenBgInput.onchange = async (e)=>{ const f=e.target.files[0]; if(f){ const url=await readFileAsDataURL(f); bgCallback?.(url); bgCallback=null; } hiddenBgInput.value=''; };
-        hiddenEmojiInput.onchange = async (e)=>{ const files=Array.from(e.target.files); if(files.length){ const urls=[]; for(const f of files) urls.push(await readFileAsDataURL(f)); emojiCallback?.(urls); emojiCallback=null; } hiddenEmojiInput.value=''; };
-        hiddenJsonInput.onchange = async (e)=>{ const f=e.target.files[0]; if(f){ const text=await f.text(); await importAll(text); } hiddenJsonInput.value=''; };
-        window.addEventListener('popstate', ()=>{ if(overlayContainer.innerHTML){ closePanel(); history.pushState(null,'',window.location.href); } });
-        history.pushState(null,'',window.location.href);
+async function sendSticker(url){
+    const quoteId=state.quoteMsgId||null;
+    const quotePrev=quoteId?await getQuotePreview(quoteId):null;
+    const msg=await addMessage('me',url,'sticker',quoteId,quotePrev);
+    state.quoteMsgId=null;quoteBar.style.display='none';
+    handleUserMessage(msg);
+}
 
-        (async ()=>{
-            await openDB();
-            await loadSettings();
-            await loadMessages();
-            startStatusRandomizer();
-            updateOtherUI();
-            applySkin();
-        })();
-    })();
+// ============ 写信功能 ============
+async function generateLetterContent(){
+    const cards=await getActiveWordCards();
+    if(cards.length===0)return null;
+    const count=Math.min(10,Math.max(5,5+Math.floor(Math.random()*6)));
+    const pool=[...cards];
+    const chosen=[];
+    for(let i=0;i<count&&pool.length>0;i++){
+        const idx=Math.floor(Math.random()*pool.length);
+        chosen.push(pool.splice(idx,1)[0]);
+    }
+    return chosen;
+}
+
+async function addLetterMessage(sender,contents){
+    const msg={sender,content:contents,type:'letter',timestamp:Date.now(),status:sender==='me'?'sent':undefined};
+    const id=await dbPut('messages',msg);
+    msg.id=id;
+    appendMsgToDOM(msg,true);
+    scrollToBottom();
+    return msg;
+}
+
+async function userSendLetter(){
+    const content=await generateLetterContent();
+    if(!content||content.length===0){alert('请先在字卡板块启用分组并添加字卡内容');return;}
+    const msg=await addLetterMessage('me',content);
+    handleUserMessage(msg);
+    // 5-12小时后对方回信
+    const hours=5+Math.random()*7;
+    const ms=hours*60*60*1000;
+    await scheduleTask('letterReply',Date.now()+ms,{});
+    alert(`信件已寄出，对方将在5~12小时后回信`);
+}
+
+async function otherSendLetter(){
+    const content=await generateLetterContent();
+    if(!content||content.length===0)return;
+    await addLetterMessage('other',content);
+}
+
+// ============ 定时任务 ============
+async function scheduleTask(type,targetTime,data={}){
+    const id=await dbPut('pendingTasks',{type,targetTime,data});
+    setTaskTimer(id,type,targetTime,data);
+    return id;
+}
+
+function setTaskTimer(id,type,targetTime,data){
+    const delay=Math.max(0,targetTime-Date.now());
+    setTimeout(async()=>{
+        try{await executeTask(type,data);}catch(e){console.error(e);}
+        await dbDelete('pendingTasks',id);
+    },delay);
+}
+
+async function executeTask(type,data){
+    if(type==='letterReply'){
+        await otherSendLetter();
+    }else if(type==='autoLetter'){
+        if(!state.autoSendLetter)return;
+        await otherSendLetter();
+        await scheduleAutoLetter();
+    }
+}
+
+async function scheduleAutoLetter(){
+    if(!state.autoSendLetter)return;
+    const minDays=state.autoSendIntervalMin||1;
+    const maxDays=state.autoSendIntervalMax||3;
+    const days=minDays+Math.random()*(maxDays-minDays);
+    const ms=days*24*60*60*1000;
+    await scheduleTask('autoLetter',Date.now()+ms,{});
+}
+
+async function clearAutoLetterTasks(){
+    const tasks=await dbGetAll('pendingTasks');
+    for(const t of tasks){if(t.type==='autoLetter')await dbDelete('pendingTasks',t.id);}
+}
+
+async function resumeTasks(){
+    const tasks=await dbGetAll('pendingTasks');
+    for(const t of tasks){
+        if(t.targetTime<=Date.now()){
+            await dbDelete('pendingTasks',t.id);
+            await executeTask(t.type,t.data);
+        }else{
+            setTaskTimer(t.id,t.type,t.targetTime,t.data);
+        }
+    }
+    if(state.autoSendLetter){
+        const tasks2=await dbGetAll('pendingTasks');
+        if(!tasks2.some(t=>t.type==='autoLetter'))await scheduleAutoLetter();
+    }
+}
+
+// ============ 功能栏面板 ============
+async function openFeaturePanel(){
+    const html=`
+    <button class="close-btn">✕</button>
+    <h3>✉️ 功能栏</h3>
+    <div style="background:linear-gradient(135deg,#fff8e7,#ffeacc);border-radius:14px;padding:16px;margin-bottom:14px;">
+        <div style="font-size:14px;font-weight:700;margin-bottom:6px;">💌 写一封信</div>
+        <div style="font-size:12px;color:#8a6d3b;line-height:1.5;margin-bottom:10px;">使用已启用的字卡内容生成信件（随机5~10条），对方将在5~12小时后回信。</div>
+        <button class="btn btn-primary" id="btnWriteLetter" style="width:100%;padding:12px;">✍️ 写一封信</button>
+    </div>
+    <div style="background:#f5f5f7;border-radius:14px;padding:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+                <div style="font-size:14px;font-weight:700;">📬 对方主动写信</div>
+                <div style="font-size:11px;color:#888;margin-top:2px;" id="autoSendStatus">已关闭</div>
+            </div>
+            <input type="checkbox" id="autoSendToggle" ${state.autoSendLetter?'checked':''} style="transform:scale(1.5);">
+        </div>
+        <div style="margin-top:12px;">
+            <div style="font-size:12px;color:#555;margin-bottom:4px;">间隔区间（天）</div>
+            <div class="slider-group">
+                <span style="font-size:11px;color:#888;min-width:28px;">最快</span>
+                <input type="range" id="autoMinSlider" min="1" max="3" value="${state.autoSendIntervalMin}" step="1">
+                <span class="val" id="autoMinVal">${state.autoSendIntervalMin}天</span>
+            </div>
+            <div class="slider-group">
+                <span style="font-size:11px;color:#888;min-width:28px;">最慢</span>
+                <input type="range" id="autoMaxSlider" min="1" max="3" value="${state.autoSendIntervalMax}" step="1">
+                <span class="val" id="autoMaxVal">${state.autoSendIntervalMax}天</span>
+            </div>
+        </div>
+    </div>
+    `;
+    openPanel(html);
+    setTimeout(()=>{
+        document.getElementById('btnWriteLetter').onclick=async()=>{
+            closePanel();
+            await userSendLetter();
+        };
+        const toggle=document.getElementById('autoSendToggle');
+        const statusEl=document.getElementById('autoSendStatus');
+        const updateStatus=async()=>{
+            if(!state.autoSendLetter){statusEl.textContent='已关闭';return;}
+            const tasks=await dbGetAll('pendingTasks');
+            const next=tasks.filter(t=>t.type==='autoLetter').sort((a,b)=>a.targetTime-b.targetTime)[0];
+            if(next){
+                const remaining=next.targetTime-Date.now();
+                const days=Math.floor(remaining/(24*60*60*1000));
+                const hours=Math.floor((remaining%(24*60*60*1000))/(60*60*1000));
+                const mins=Math.floor((remaining%(60*60*1000))/(60*1000));
+                statusEl.textContent=`下次: ${days}天${hours}小时${mins}分后`;
+            }else{
+                statusEl.textContent='已开启（等待调度）';
+            }
+        };
+        updateStatus();
+        toggle.onchange=async()=>{
+            state.autoSendLetter=toggle.checked;
+            await saveSetting('autoSendLetter',state.autoSendLetter);
+            await clearAutoLetterTasks();
+            if(state.autoSendLetter){
+                await scheduleAutoLetter();
+            }
+            updateStatus();
+        };
+        const minSlider=document.getElementById('autoMinSlider');
+        const maxSlider=document.getElementById('autoMaxSlider');
+        minSlider.oninput=function(){
+            document.getElementById('autoMinVal').textContent=this.value+'天';
+            if(+maxSlider.value<+this.value){maxSlider.value=this.value;document.getElementById('autoMaxVal').textContent=this.value+'天';}
+        };
+        maxSlider.oninput=function(){
+            document.getElementById('autoMaxVal').textContent=this.value+'天';
+            if(+minSlider.value>+this.value){minSlider.value=this.value;document.getElementById('autoMinVal').textContent=this.value+'天';}
+        };
+        const saveInterval=async()=>{
+            state.autoSendIntervalMin=+minSlider.value;
+            state.autoSendIntervalMax=+maxSlider.value;
+            await saveSetting('autoSendIntervalMin',state.autoSendIntervalMin);
+            await saveSetting('autoSendIntervalMax',state.autoSendIntervalMax);
+            if(state.autoSendLetter){
+                await clearAutoLetterTasks();
+                await scheduleAutoLetter();
+                updateStatus();
+            }
+        };
+        minSlider.onchange=saveInterval;
+        maxSlider.onchange=saveInterval;
+    },100);
+}
+
+// ============ 发送 ============
+async function sendMessage(){
+    const content=msgInput.value.trim();
+    if(!content)return;
+    msgInput.value='';msgInput.style.height='auto';
+    const quoteId=state.quoteMsgId||null;
+    const quotePrev=quoteId?await getQuotePreview(quoteId):null;
+    const msg=await addMessage('me',content,'text',quoteId,quotePrev);
+    state.quoteMsgId=null;quoteBar.style.display='none';
+    handleUserMessage(msg);
+}
+
+// ============ 导出导入 ============
+async function exportAll(){
+    const data={
+        settings:await dbGetAll('settings'),
+        messages:await dbGetAll('messages'),
+        wordCardGroups:await dbGetAll('wordCardGroups'),
+        userStickers:await dbGetAll('userStickers'),
+        otherStickers:await dbGetAll('otherStickers'),
+        pendingTasks:await dbGetAll('pendingTasks'),
+    };
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`LoveSatoru_backup_${new Date().toISOString().slice(0,10)}.json`;a.click();
+    alert('数据导出成功！');
+}
+
+async function importAll(jsonText){
+    try{
+        const data=JSON.parse(jsonText);
+        if(!confirm('导入将覆盖当前数据，确定？'))return;
+        await dbClear('settings');await dbClear('messages');await dbClear('wordCardGroups');
+        await dbClear('userStickers');await dbClear('otherStickers');await dbClear('pendingTasks');
+        for(const s of (data.settings||[]))await dbPut('settings',s);
+        for(const m of (data.messages||[]))await dbPut('messages',m);
+        for(const g of (data.wordCardGroups||[]))await dbPut('wordCardGroups',g);
+        for(const s of (data.userStickers||[]))await dbPut('userStickers',s);
+        for(const s of (data.otherStickers||[]))await dbPut('otherStickers',s);
+        for(const t of (data.pendingTasks||[]))await dbPut('pendingTasks',t);
+        state.bgImage=null;state.otherAvatar=null;state.myAvatar=null;
+        state.activeWordCardGroupIds=[];state.autoSendLetter=false;
+        await loadSettings();await loadMessages();updateOtherUI();closePanel();
+        await resumeTasks();
+        alert('导入成功');
+    }catch(e){alert('导入失败：'+e.message);}
+}
+
+// ============ 事件绑定 ============
+btnSend.onclick=sendMessage;
+msgInput.onkeydown=(e)=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage()}};
+msgInput.oninput=()=>{msgInput.style.height='auto';msgInput.style.height=Math.min(msgInput.scrollHeight,100)+'px'};
+btnEmoji.onclick=openEmojiPanel;
+btnFeatures.onclick=openFeaturePanel;
+btnSettings.onclick=openSettingsPanel;
+btnWordCards.onclick=openWordCardsPanel;
+cancelQuote.onclick=()=>{state.quoteMsgId=null;quoteBar.style.display='none'};
+document.getElementById('avatarWrap').onclick=()=>{fileCallback=async(url)=>{state.otherAvatar=url;await saveSetting('otherAvatar',url);updateOtherUI()};hiddenFileInput.click()};
+document.getElementById('infoArea').onclick=openSettingsPanel;
+hiddenFileInput.onchange=async(e)=>{const f=e.target.files[0];if(f){const url=await readFileAsDataURL(f);fileCallback?.(url);fileCallback=null;}hiddenFileInput.value=''};
+hiddenBgInput.onchange=async(e)=>{const f=e.target.files[0];if(f){const url=await readFileAsDataURL(f);bgCallback?.(url);bgCallback=null;}hiddenBgInput.value=''};
+hiddenEmojiInput.onchange=async(e)=>{const files=Array.from(e.target.files);if(files.length){const urls=[];for(const f of files)urls.push(await readFileAsDataURL(f));emojiCallback?.(urls);emojiCallback=null;}hiddenEmojiInput.value=''};
+hiddenJsonInput.onchange=async(e)=>{const f=e.target.files[0];if(f){const text=await f.text();await importAll(text);}hiddenJsonInput.value=''};
+window.addEventListener('popstate',()=>{if(overlayContainer.innerHTML){closePanel();history.pushState(null,'',window.location.href)}});
+history.pushState(null,'',window.location.href);
+
+// ============ 初始化 ============
+async function init(){
+    await openDB();
+    await loadSettings();
+    await loadMessages();
+    updateOtherUI();
+    applySkin();
+    startStatusRandomizer();
+    quoteBar.style.display='none';
+    state.quoteMsgId=null;
+    // 恢复定时任务（写信回信 / 主动来信）
+    await resumeTasks();
+}
+init().catch(e=>console.error('Init error:',e));
+
+console.log('💖 LoveSatoru 已就绪');
+console.log(' - IndexedDB 持久化存储');
+console.log(' - 多分组字卡同时生效');
+console.log(' - 双方引用消息');
+console.log(' - 已读 → 发消息中 → 输入中 → 字卡回复');
+console.log(' - 写信功能（用户写信5~12h回信，对方主动写信1~3天）');
+})();
 </script>
 </body>
 </html>
