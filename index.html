@@ -679,6 +679,142 @@ async function sendSticker(url){
   handleUserMessage(msg);
 }
 
+/* ========== 信件面板 ========== */
+async function openLetterPanel(){
+  const html=`
+    <button class="close-btn">✕</button><h3>✉️ 信件</h3>
+    <label>写一封信</label>
+    <textarea id="letterInput" placeholder="写下你想说的话..." style="min-height:100px"></textarea>
+    <button class="btn btn-primary" id="btnSendLetter" style="width:100%;margin-top:6px">📮 寄出</button>
+    <hr>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin:6px 0">
+      <span style="font-size:13px;font-weight:600">对方主动写信</span>
+      <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;margin:0">
+        <input type="checkbox" id="autoLetterToggle" ${state.autoLetterEnabled?'checked':''}> 开启（1-3天随机）
+      </label>
+    </div>
+    <div class="slider-group">
+      <span style="font-size:12px">最快(天)</span>
+      <input type="range" id="autoMinDays" min="1" max="3" value="${state.autoLetterMinDays||1}">
+      <span class="val" id="autoMinVal">${state.autoLetterMinDays||1}天</span>
+    </div>
+    <div class="slider-group">
+      <span style="font-size:12px">最慢(天)</span>
+      <input type="range" id="autoMaxDays" min="1" max="3" value="${state.autoLetterMaxDays||3}">
+      <span class="val" id="autoMaxVal">${state.autoLetterMaxDays||3}天</span>
+    </div>
+    <hr><label>📬 收件箱</label>
+    <div id="lettersList" style="max-height:340px;overflow-y:auto"></div>
+  `;
+  openPanel(html);
+  setTimeout(()=>bindLetterEvents(),100);
+  renderLetters();
+}
+
+async function renderLetters(){
+  const list=document.getElementById('lettersList');
+  if(!list)return;
+  const letters=await dbGetAll('letters');
+  letters.sort((a,b)=>b.timestamp-a.timestamp);
+  if(letters.length===0){list.innerHTML='<p style="color:#999;font-size:13px;text-align:center;padding:20px">暂无信件</p>';return}
+  list.innerHTML=letters.map(l=>`
+    <div class="letter-item ${l.sender==='other'?'other':''}">
+      <div class="lhead">
+        <span>${l.sender==='me'?'📤 我':'📥 '+(state.otherName||'对方')}</span>
+        <span>${formatTime(l.timestamp)}</span>
+      </div>
+      <div class="lbody">${escHtml(l.content)}</div>
+    </div>
+  `).join('');
+}
+
+function bindLetterEvents(){
+  const ta=document.getElementById('letterInput');
+  document.getElementById('btnSendLetter').onclick=async()=>{
+    const content=ta.value.trim();
+    if(!content){alert('写点什么再寄出吧');return}
+    await dbPut('letters',{sender:'me',content,timestamp:Date.now(),read:true});
+    ta.value='';
+    // 安排对方3-12小时回信
+    const delayMs=(3+Math.random()*9)*3600*1000;
+    const sched=(await dbGet('settings','scheduledLetterReplies'))?.value||[];
+    sched.push(Date.now()+delayMs);
+    await dbPut('settings',{key:'scheduledLetterReplies',value:sched});
+    alert('信件已寄出，对方将在 3-12 小时内回信');
+    renderLetters();
+  };
+  const toggle=document.getElementById('autoLetterToggle');
+  const minD=document.getElementById('autoMinDays');
+  const maxD=document.getElementById('autoMaxDays');
+  toggle.onchange=async function(){
+    await saveSetting('autoLetterEnabled',this.checked);
+    if(this.checked)scheduleAutoLetter();
+  };
+  minD.oninput=function(){
+    document.getElementById('autoMinVal').textContent=this.value+'天';
+    if(+maxD.value<+this.value){maxD.value=this.value;document.getElementById('autoMaxVal').textContent=this.value+'天'}
+  };
+  maxD.oninput=function(){
+    document.getElementById('autoMaxVal').textContent=this.value+'天';
+    if(+minD.value>+this.value){minD.value=this.value;document.getElementById('autoMinVal').textContent=this.value+'天'}
+  };
+  minD.onchange=async()=>{await saveSetting('autoLetterMinDays',+minD.value)};
+  maxD.onchange=async()=>{await saveSetting('autoLetterMaxDays',+maxD.value)};
+}
+
+/* ========== 对方写信（字卡5-10条） ========== */
+async function sendOtherLetter(){
+  const pool=await buildReplyPool();
+  const textPool=pool.filter(p=>p.type==='text').map(p=>p.content);
+  const count=5+Math.floor(Math.random()*6); // 5-10
+  const lines=[];
+  if(textPool.length===0){lines.push('（对方看着空白的信纸，不知该写什么...）')}
+  else{
+    const temp=[...textPool];
+    for(let i=0;i<count;i++){
+      if(temp.length===0)temp.push(...textPool);
+      const idx=Math.floor(Math.random()*temp.length);
+      lines.push(temp.splice(idx,1)[0]);
+    }
+  }
+  await dbPut('letters',{sender:'other',content:lines.join('\n'),timestamp:Date.now(),read:false});
+  renderLetters();
+}
+
+/* ========== 定时任务：检查待回复信件 & 自动写信 ========== */
+async function checkScheduledLetters(){
+  // 1. 检查用户信件的回复
+  const schedSetting=await dbGet('settings','scheduledLetterReplies');
+  if(schedSetting&&Array.isArray(schedSetting.value)){
+    const now=Date.now();
+    const due=schedSetting.value.filter(t=>t<=now);
+    const remain=schedSetting.value.filter(t=>t>now);
+    if(due.length>0){
+      for(const _ of due)await sendOtherLetter();
+      await dbPut('settings',{key:'scheduledLetterReplies',value:remain});
+    }
+  }
+  // 2. 自动写信
+  if(state.autoLetterEnabled){
+    const next=await dbGet('settings','nextAutoLetterTime');
+    const now=Date.now();
+    if(!next||!next.value||next.value<=now){
+      await sendOtherLetter();
+      const minD=Math.max(1,Math.min(3,state.autoLetterMinDays||1));
+      const maxD=Math.max(minD,Math.min(3,state.autoLetterMaxDays||3));
+      const days=minD+Math.random()*(maxD-minD);
+      const nextTime=now+days*24*3600*1000;
+      await dbPut('settings',{key:'nextAutoLetterTime',value:nextTime});
+    }
+  }
+}
+
+function scheduleAutoLetter(){
+  if(letterCheckTimer)clearInterval(letterCheckTimer);
+  letterCheckTimer=setInterval(checkScheduledLetters,60000);
+  checkScheduledLetters();
+}
+
 /* ========== 数据导入导出 ========== */
 async function exportAll(){
   const data={
