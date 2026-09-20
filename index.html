@@ -1,901 +1,973 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>LoveSatoru</title>
-<style>
-:root{--bg:#f0f0f5;--topbar-bg:#ffffff;--bottombar-bg:#ffffff;--my-bubble:#d1f0ff;--other-bubble:#ffffff;--text:#1a1a1a;--subtext:#888;--accent:#5b9bd5;--border:#e0e0e0;--shadow:0 2px 12px rgba(0,0,0,0.06);--radius:18px;--font-size:15px;--input-bg:#f5f5f7;--danger:#e05555;--tag-bg:#f0f0f5;--overlay:rgba(0,0,0,0.5);--safe-bottom:env(safe-area-inset-bottom,12px)}
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
-html,body{height:100%;width:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);font-size:var(--font-size);display:flex;justify-content:center;align-items:center;-webkit-overflow-scrolling:touch;transition:background 0.4s}
-body.has-bg{background-size:cover;background-position:center;background-repeat:no-repeat;background-attachment:fixed}
-#app{width:100%;max-width:500px;height:100%;display:flex;flex-direction:column;position:relative;overflow:hidden;box-shadow:var(--shadow);background:transparent;border-radius:0}
-@media(min-width:501px){#app{border-radius:20px;height:95%;max-height:900px}}
-.topbar{display:flex;align-items:center;padding:10px 14px;background:var(--topbar-bg);border-bottom:1px solid var(--border);gap:10px;z-index:10;flex-shrink:0;min-height:56px;transition:background 0.4s}
-.topbar .avatar-wrap{position:relative;flex-shrink:0;cursor:pointer}
-.topbar .avatar{width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid var(--border);background:#ddd}
-.topbar .status-dot{position:absolute;bottom:1px;right:1px;width:11px;height:11px;border-radius:50%;border:2px solid #fff;background:#4cd964}
-.topbar .info{flex:1;min-width:0;cursor:pointer}
-.topbar .name{font-weight:600;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.topbar .status-text{font-size:12px;color:var(--subtext);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.topbar .btn-icon{width:34px;height:34px;border-radius:50%;border:none;background:var(--input-bg);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:0.2s}
-.topbar .btn-icon:active{transform:scale(0.92);opacity:0.7}
-.chat-area{flex:1;overflow-y:auto;padding:12px 10px;display:flex;flex-direction:column;gap:8px;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;background:transparent}
-.chat-area::-webkit-scrollbar{display:none}
-.msg-row{display:flex;flex-direction:column;max-width:82%;animation:fadeInUp 0.25s ease}
-.msg-row.me{align-self:flex-end;align-items:flex-end}
-.msg-row.other{align-self:flex-start;align-items:flex-start}
-@keyframes fadeInUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-.msg-bubble{padding:10px 14px;border-radius:var(--radius);word-break:break-word;position:relative;font-size:15px;line-height:1.5;cursor:pointer;transition:0.15s;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
-.msg-row.me .msg-bubble{background:var(--my-bubble);border-bottom-right-radius:6px}
-.msg-row.other .msg-bubble{background:var(--other-bubble);border-bottom-left-radius:6px}
-.msg-bubble:active{transform:scale(0.97)}
-.msg-bubble .quote-preview{font-size:12px;color:var(--subtext);border-left:3px solid var(--accent);padding-left:8px;margin-bottom:6px;opacity:0.8;max-height:40px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.msg-bubble img.sticker-msg{max-width:140px;max-height:140px;border-radius:10px;display:block}
-.msg-bubble.pat-bubble{background:#fff6e0!important;font-style:italic;font-size:13px;color:#8a6d2b}
-.msg-row.other .msg-bubble.pat-bubble{background:#fff6e0!important}
-.msg-row.me .msg-bubble.pat-bubble{background:#fff6e0!important}
-.msg-time{font-size:11px;color:var(--subtext);margin-top:3px;padding:0 4px}
-.msg-status{font-size:11px;color:var(--subtext);margin-top:2px;padding:0 4px}
-.typing-indicator{align-self:flex-start;background:var(--other-bubble);padding:12px 16px;border-radius:var(--radius);border-bottom-left-radius:6px;font-size:13px;color:var(--subtext);display:flex;align-items:center;gap:6px;animation:fadeInUp 0.2s ease}
-.typing-dots{display:flex;gap:3px}
-.typing-dots span{width:7px;height:7px;border-radius:50%;background:#aaa;animation:bounce 0.7s infinite alternate}
-.typing-dots span:nth-child(2){animation-delay:0.15s}
-.typing-dots span:nth-child(3){animation-delay:0.3s}
-@keyframes bounce{to{transform:translateY(-8px);opacity:0.4}}
-.bottombar{display:flex;align-items:flex-end;padding:8px 10px;background:var(--bottombar-bg);border-top:1px solid var(--border);gap:6px;z-index:10;flex-shrink:0;padding-bottom:calc(8px + var(--safe-bottom));transition:background 0.4s;flex-wrap:wrap}
-.bottombar .input-wrap{flex:1;display:flex;align-items:flex-end;background:var(--input-bg);border-radius:22px;padding:4px 6px 4px 14px;gap:4px;min-width:0}
-.bottombar textarea{flex:1;border:none;background:transparent;resize:none;font-size:15px;line-height:1.4;max-height:100px;min-height:34px;padding:6px 0;outline:none;font-family:inherit;color:var(--text);-webkit-user-select:text;user-select:text}
-.bottombar .btn-sm{width:34px;height:34px;border-radius:50%;border:none;background:transparent;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:0.2s}
-.bottombar .btn-sm:active{transform:scale(0.88);opacity:0.6}
-.bottombar .btn-send{width:40px;height:40px;border-radius:50%;border:none;background:var(--accent);color:#fff;cursor:pointer;font-size:18px;flex-shrink:0;transition:0.2s;display:flex;align-items:center;justify-content:center}
-.bottombar .btn-send:active{transform:scale(0.88);opacity:0.7}
-.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--overlay);z-index:50;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn 0.2s ease}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-.panel{background:#fff;width:100%;max-width:500px;max-height:88vh;border-radius:20px 20px 0 0;overflow-y:auto;padding:20px 16px;padding-bottom:calc(20px + var(--safe-bottom));animation:slideUp 0.3s ease;z-index:51;position:relative}
-@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.panel h3{font-size:17px;margin-bottom:14px;text-align:center;font-weight:700}
-.panel h4{font-size:14px;margin:12px 0 6px;color:#555;font-weight:700}
-.panel .close-btn{position:absolute;top:12px;right:16px;width:32px;height:32px;border-radius:50%;border:none;background:#eee;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;z-index:2}
-.panel label{font-size:13px;font-weight:600;display:block;margin:10px 0 4px;color:#555}
-.panel input[type="text"],.panel textarea,.panel select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);font-size:14px;font-family:inherit;background:#fafafa;-webkit-user-select:text;user-select:text}
-.panel textarea{min-height:80px;resize:vertical}
-.panel .btn{display:inline-block;padding:10px 18px;border-radius:20px;border:none;cursor:pointer;font-size:14px;font-weight:600;margin:4px;transition:0.2s}
-.panel .btn:active{transform:scale(0.94);opacity:0.75}
-.btn-primary{background:var(--accent);color:#fff}
-.btn-outline{background:#fff;border:2px solid var(--accent);color:var(--accent)}
-.btn-danger{background:var(--danger);color:#fff}
-.btn-smaller{padding:6px 12px;font-size:12px;border-radius:14px}
-.slider-group{display:flex;align-items:center;gap:10px;margin:6px 0}
-.slider-group input[type="range"]{flex:1;accent-color:var(--accent);height:6px}
-.slider-group .val{font-weight:700;font-size:14px;min-width:55px;text-align:right;color:var(--accent)}
-.chip-row{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
-.chip{padding:7px 14px;border-radius:16px;font-size:13px;background:var(--tag-bg);cursor:pointer;border:1.5px solid transparent;transition:0.2s;white-space:nowrap}
-.chip.active{border-color:var(--accent);background:#e8f2fc;font-weight:600}
-.wordcard-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:10px;background:#f9f9f9;margin:3px 0;font-size:13px;gap:8px}
-.reply-quote-bar{display:flex;align-items:center;gap:8px;padding:6px 12px;background:#f0f0f5;border-radius:10px;font-size:12px;color:var(--subtext);margin:0 10px 4px;flex-shrink:0}
-.reply-quote-bar .cancel-quote{cursor:pointer;font-weight:700;color:var(--danger);font-size:16px;padding:0 4px}
-.sticker-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-height:220px;overflow-y:auto;padding:4px}
-.sticker-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;cursor:pointer;border:2px solid transparent;transition:0.15s}
-.sticker-grid img:active{border-color:var(--accent);transform:scale(0.9)}
-.add-sticker-btn{aspect-ratio:1;border-radius:10px;border:2px dashed #ccc;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:28px;color:#aaa;background:#fafafa}
-.letter-item{padding:10px 12px;border-radius:12px;background:#fafafa;margin:6px 0;font-size:13px;border-left:3px solid var(--accent)}
-.letter-item.other{background:#fff8e8;border-left-color:#e0a020}
-.letter-item .lhead{font-size:11px;color:var(--subtext);margin-bottom:4px;display:flex;justify-content:space-between}
-.letter-item .lbody{white-space:pre-wrap;line-height:1.6;word-break:break-word}
-.group-toggle{width:38px;height:22px;border-radius:12px;background:#ddd;position:relative;transition:0.2s;cursor:pointer;flex-shrink:0}
-.group-toggle.on{background:var(--accent)}
-.group-toggle::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:0.2s}
-.group-toggle.on::after{left:18px}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+    <title>LoveSatoru</title>
+    <style>
+        :root {
+            --bg: #f0f0f5;
+            --topbar-bg: #ffffff;
+            --bottombar-bg: #ffffff;
+            --my-bubble: #d1f0ff;
+            --other-bubble: #ffffff;
+            --text: #1a1a1a;
+            --subtext: #888;
+            --accent: #5b9bd5;
+            --border: #e0e0e0;
+            --shadow: 0 2px 12px rgba(0,0,0,0.06);
+            --radius: 18px;
+            --font-size: 15px;
+            --input-bg: #f5f5f7;
+            --danger: #e05555;
+            --tag-bg: #f0f0f5;
+            --overlay: rgba(0,0,0,0.5);
+            --safe-bottom: env(safe-area-inset-bottom,12px);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; -webkit-user-select:none; user-select:none; }
+        html, body { height:100%; width:100%; overflow:hidden; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif; background:var(--bg); color:var(--text); font-size:var(--font-size); display:flex; justify-content:center; align-items:center; -webkit-overflow-scrolling:touch; transition:background 0.4s; }
+        body.has-bg { background-size:cover; background-position:center; background-repeat:no-repeat; background-attachment:fixed; }
+        #app { width:100%; max-width:500px; height:100%; display:flex; flex-direction:column; position:relative; overflow:hidden; box-shadow:var(--shadow); background:transparent; border-radius:0; }
+        @media(min-width:501px) { #app { border-radius:20px; height:95%; max-height:900px; } }
+        .topbar { display:flex; align-items:center; padding:10px 14px; background:var(--topbar-bg); border-bottom:1px solid var(--border); gap:10px; z-index:10; flex-shrink:0; min-height:56px; transition:background 0.4s; }
+        .topbar .avatar-wrap { position:relative; flex-shrink:0; cursor:pointer; }
+        .topbar .avatar { width:42px; height:42px; border-radius:50%; object-fit:cover; border:2px solid var(--border); background:#ddd; }
+        .topbar .status-dot { position:absolute; bottom:1px; right:1px; width:11px; height:11px; border-radius:50%; border:2px solid #fff; background:#4cd964; }
+        .topbar .info { flex:1; min-width:0; cursor:pointer; }
+        .topbar .name { font-weight:600; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .topbar .status-text { font-size:12px; color:var(--subtext); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .topbar .btn-icon { width:34px; height:34px; border-radius:50%; border:none; background:var(--input-bg); cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:0.2s; }
+        .topbar .btn-icon:active { transform:scale(0.92); opacity:0.7; }
+        .chat-area { flex:1; overflow-y:auto; padding:12px 10px; display:flex; flex-direction:column; gap:8px; scroll-behavior:smooth; -webkit-overflow-scrolling:touch; background:transparent; }
+        .chat-area::-webkit-scrollbar { display:none; }
+        .msg-row { display:flex; flex-direction:column; max-width:82%; animation:fadeInUp 0.25s ease; }
+        .msg-row.me { align-self:flex-end; align-items:flex-end; }
+        .msg-row.other { align-self:flex-start; align-items:flex-start; }
+        @keyframes fadeInUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+        .msg-bubble { padding:10px 14px; border-radius:var(--radius); word-break:break-word; position:relative; font-size:15px; line-height:1.5; cursor:pointer; transition:0.15s; box-shadow:0 1px 3px rgba(0,0,0,0.04); }
+        .msg-row.me .msg-bubble { background:var(--my-bubble); border-bottom-right-radius:6px; }
+        .msg-row.other .msg-bubble { background:var(--other-bubble); border-bottom-left-radius:6px; }
+        .msg-bubble:active { transform:scale(0.97); }
+        .msg-bubble .quote-preview { font-size:12px; color:var(--subtext); border-left:3px solid var(--accent); padding:5px 8px; margin-bottom:6px; background:rgba(0,0,0,0.04); border-radius:0 6px 6px 0; max-height:48px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .msg-bubble .quote-preview .qwho { color:var(--accent); font-weight:600; margin-right:4px; }
+        .msg-bubble img.sticker-msg { max-width:140px; max-height:140px; border-radius:10px; display:block; }
+        .msg-time { font-size:11px; color:var(--subtext); margin-top:3px; padding:0 4px; }
+        .msg-status { font-size:11px; color:var(--subtext); margin-top:2px; padding:0 4px; }
+        /* 拍一拍 */
+        .msg-row.pat-row { align-self:center; max-width:92%; align-items:center; animation:none; }
+        .pat-msg { font-size:12px; color:#8a8a8a; background:rgba(0,0,0,0.06); padding:5px 14px; border-radius:14px; text-align:center; line-height:1.4; animation:patPop 0.42s cubic-bezier(.2,1.5,.5,1); }
+        @keyframes patPop { 0%{transform:scale(.4);opacity:0} 60%{transform:scale(1.12)} 100%{transform:scale(1);opacity:1} }
+        .typing-indicator { align-self:flex-start; background:var(--other-bubble); padding:12px 16px; border-radius:var(--radius); border-bottom-left-radius:6px; font-size:13px; color:var(--subtext); display:flex; align-items:center; gap:6px; animation:fadeInUp 0.2s ease; }
+        .typing-dots { display:flex; gap:3px; }
+        .typing-dots span { width:7px; height:7px; border-radius:50%; background:#aaa; animation:bounce 0.7s infinite alternate; }
+        .typing-dots span:nth-child(2) { animation-delay:0.15s; } .typing-dots span:nth-child(3) { animation-delay:0.3s; }
+        @keyframes bounce { to { transform:translateY(-8px); opacity:0.4; } }
+        .bottombar { display:flex; align-items:flex-end; padding:8px 10px; background:var(--bottombar-bg); border-top:1px solid var(--border); gap:6px; z-index:10; flex-shrink:0; padding-bottom:calc(8px + var(--safe-bottom)); transition:background 0.4s; flex-wrap:wrap; }
+        .bottombar .input-wrap { flex:1; display:flex; align-items:flex-end; background:var(--input-bg); border-radius:22px; padding:4px 6px 4px 14px; gap:4px; min-width:0; }
+        .bottombar textarea { flex:1; border:none; background:transparent; resize:none; font-size:15px; line-height:1.4; max-height:100px; min-height:34px; padding:6px 0; outline:none; font-family:inherit; color:var(--text); -webkit-user-select:text; user-select:text; }
+        .bottombar .btn-sm { width:34px; height:34px; border-radius:50%; border:none; background:transparent; cursor:pointer; font-size:19px; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:0.2s; }
+        .bottombar .btn-sm:active { transform:scale(0.88); opacity:0.6; }
+        .bottombar .btn-send { width:40px; height:40px; border-radius:50%; border:none; background:var(--accent); color:#fff; cursor:pointer; font-size:18px; flex-shrink:0; transition:0.2s; display:flex; align-items:center; justify-content:center; }
+        .bottombar .btn-send:active { transform:scale(0.88); opacity:0.7; }
+        .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:var(--overlay); z-index:50; display:flex; align-items:flex-end; justify-content:center; animation:fadeIn 0.2s ease; }
+        @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+        .panel { background:#fff; width:100%; max-width:500px; max-height:85vh; border-radius:20px 20px 0 0; overflow-y:auto; padding:20px 16px; padding-bottom:calc(20px + var(--safe-bottom)); animation:slideUp 0.3s ease; z-index:51; position:relative; }
+        @keyframes slideUp { from { transform:translateY(100%); } to { transform:translateY(0); } }
+        .panel h3 { font-size:17px; margin-bottom:14px; text-align:center; font-weight:700; }
+        .panel h4 { font-size:14px; margin:12px 0 6px; color:#444; }
+        .panel .close-btn { position:absolute; top:12px; right:16px; width:32px; height:32px; border-radius:50%; border:none; background:#eee; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; z-index:2; }
+        .panel label { font-size:13px; font-weight:600; display:block; margin:10px 0 4px; color:#555; }
+        .panel input[type="text"],.panel input[type="file"],.panel textarea,.panel select { width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); font-size:14px; font-family:inherit; background:#fafafa; -webkit-user-select:text; user-select:text; }
+        .panel textarea { min-height:80px; resize:vertical; }
+        .panel .btn { display:inline-block; padding:10px 18px; border-radius:20px; border:none; cursor:pointer; font-size:14px; font-weight:600; margin:4px; transition:0.2s; }
+        .panel .btn:active { transform:scale(0.94); opacity:0.75; }
+        .btn-primary { background:var(--accent); color:#fff; }
+        .btn-outline { background:#fff; border:2px solid var(--accent); color:var(--accent); }
+        .btn-danger { background:var(--danger); color:#fff; }
+        .btn-smaller { padding:6px 12px; font-size:12px; border-radius:14px; }
+        .slider-group { display:flex; align-items:center; gap:10px; margin:6px 0; }
+        .slider-group input[type="range"] { flex:1; accent-color:var(--accent); height:6px; }
+        .slider-group .val { font-weight:700; font-size:14px; min-width:55px; text-align:right; color:var(--accent); }
+        .chip-row { display:flex; flex-wrap:wrap; gap:6px; margin:6px 0; }
+        .chip { padding:7px 14px; border-radius:16px; font-size:13px; background:var(--tag-bg); cursor:pointer; border:1.5px solid transparent; transition:0.2s; white-space:nowrap; }
+        .chip.active { border-color:var(--accent); background:#e8f2fc; font-weight:600; }
+        .wordcard-item { display:flex; align-items:center; justify-content:space-between; padding:8px 12px; border-radius:10px; background:#f9f9f9; margin:3px 0; font-size:13px; gap:8px; }
+        .wordcard-item span { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .reply-quote-bar { display:flex; align-items:center; gap:8px; padding:6px 12px; background:#f0f0f5; border-radius:10px; font-size:12px; color:var(--subtext); margin:0 10px 4px; flex-shrink:0; }
+        .reply-quote-bar .cancel-quote { cursor:pointer; font-weight:700; color:var(--danger); font-size:16px; padding:0 4px; }
+        .sticker-grid { display:grid; grid-template-columns: repeat(4,1fr); gap:8px; max-height:220px; overflow-y:auto; padding:4px; }
+        .sticker-grid img { width:100%; aspect-ratio:1; object-fit:cover; border-radius:10px; cursor:pointer; border:2px solid transparent; transition:0.15s; }
+        .sticker-grid img:active { border-color:var(--accent); transform:scale(0.9); }
+        .add-sticker-btn { aspect-ratio:1; border-radius:10px; border:2px dashed #ccc; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:28px; color:#aaa; background:#fafafa; }
+    </style>
 </head>
 <body>
 <div id="app">
-  <div class="topbar">
-    <div class="avatar-wrap" id="avatarWrap">
-      <img class="avatar" id="otherAvatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23e0e0e0'/%3E%3Ccircle cx='50' cy='38' r='18' fill='%23bbb'/%3E%3Cellipse cx='50' cy='78' rx='30' ry='22' fill='%23bbb'/%3E%3C/svg%3E" alt="avatar">
-      <div class="status-dot"></div>
+    <div class="topbar">
+        <div class="avatar-wrap" id="avatarWrap">
+            <img class="avatar" id="otherAvatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23e0e0e0'/%3E%3Ccircle cx='50' cy='38' r='18' fill='%23bbb'/%3E%3Cellipse cx='50' cy='78' rx='30' ry='22' fill='%23bbb'/%3E%3C/svg%3E" alt="avatar">
+            <div class="status-dot"></div>
+        </div>
+        <div class="info" id="infoArea">
+            <div class="name" id="otherName">Satoru</div>
+            <div class="status-text" id="otherStatus">在线</div>
+        </div>
+        <button class="btn-icon" id="btnSettings" title="设置">⚙️</button>
+        <button class="btn-icon" id="btnWordCards" title="字卡">🃏</button>
     </div>
-    <div class="info" id="infoArea">
-      <div class="name" id="otherName">Satoru</div>
-      <div class="status-text" id="otherStatus">在线</div>
+    <div class="chat-area" id="chatArea"></div>
+    <div class="reply-quote-bar" id="quoteBar" style="display:none;">
+        <span id="quotePreview">引用: ...</span>
+        <span class="cancel-quote" id="cancelQuote">✕</span>
     </div>
-    <button class="btn-icon" id="btnLetter" title="信件">✉️</button>
-    <button class="btn-icon" id="btnSettings" title="设置">⚙️</button>
-    <button class="btn-icon" id="btnWordCards" title="字卡">🃏</button>
-  </div>
-  <div class="chat-area" id="chatArea"></div>
-  <div class="reply-quote-bar" id="quoteBar" style="display:none">
-    <span id="quotePreview">引用: ...</span>
-    <span class="cancel-quote" id="cancelQuote">✕</span>
-  </div>
-  <div class="bottombar">
-    <button class="btn-sm" id="btnEmoji" title="表情包">😊</button>
-    <div class="input-wrap"><textarea id="msgInput" rows="1" placeholder="输入消息..."></textarea></div>
-    <button class="btn-send" id="btnSend">➤</button>
-  </div>
+    <div class="bottombar">
+        <button class="btn-sm" id="btnPat" title="拍一拍">👋</button>
+        <button class="btn-sm" id="btnEmoji" title="表情包">😊</button>
+        <div class="input-wrap">
+            <textarea id="msgInput" rows="1" placeholder="输入消息..."></textarea>
+        </div>
+        <button class="btn-send" id="btnSend">➤</button>
+    </div>
 </div>
 <div id="overlayContainer"></div>
 <input type="file" id="hiddenFileInput" style="display:none" accept="image/*">
 <input type="file" id="hiddenJsonInput" style="display:none" accept=".json,application/json">
 <input type="file" id="hiddenBgInput" style="display:none" accept="image/*">
 <input type="file" id="hiddenEmojiInput" style="display:none" accept="image/*" multiple>
+
 <script>
-(function(){
-const DB_NAME='LoveSatoruDB',DB_VERSION=5;
-let db=null;
-function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains('settings'))d.createObjectStore('settings',{keyPath:'key'});if(!d.objectStoreNames.contains('messages'))d.createObjectStore('messages',{keyPath:'id',autoIncrement:true});if(!d.objectStoreNames.contains('wordCardGroups'))d.createObjectStore('wordCardGroups',{keyPath:'id',autoIncrement:true});if(!d.objectStoreNames.contains('userStickers'))d.createObjectStore('userStickers',{keyPath:'id',autoIncrement:true});if(!d.objectStoreNames.contains('otherStickers'))d.createObjectStore('otherStickers',{keyPath:'id',autoIncrement:true});if(!d.objectStoreNames.contains('letters'))d.createObjectStore('letters',{keyPath:'id',autoIncrement:true});};r.onsuccess=e=>{db=e.target.result;res(db)};r.onerror=e=>rej(e.target.error)})}
-function dbPut(s,d){return new Promise((res,rej)=>{const t=db.transaction(s,'readwrite');const r=t.objectStore(s).put(d);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
-function dbGetAll(s){return new Promise((res,rej)=>{const t=db.transaction(s,'readonly');const r=t.objectStore(s).getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
-function dbGet(s,k){return new Promise((res,rej)=>{const t=db.transaction(s,'readonly');const r=t.objectStore(s).get(k);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
-function dbDelete(s,k){return new Promise((res,rej)=>{const t=db.transaction(s,'readwrite');const r=t.objectStore(s).delete(k);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
-function dbClear(s){return new Promise((res,rej)=>{const t=db.transaction(s,'readwrite');const r=t.objectStore(s).clear();r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+    (function() {
+        const DB_NAME = 'LoveSatoruDB';
+        const DB_VERSION = 4;
+        let db = null;
 
-const state={
-  otherName:'Satoru',otherStatus:'在线',
-  statusWords:['在线','忙碌','离开','睡觉中','工作中','想你了','emo中','充电中'],
-  myAvatar:null,otherAvatar:null,
-  minReplySec:2,maxReplySec:15,
-  replyCountMin:3,replyCountMax:5,
-  activeWordCardGroupIds:[],
-  bgImage:null,topbarColor:'#ffffff',bottombarColor:'#ffffff',
-  autoLetterEnabled:false,autoLetterMinDays:1,autoLetterMaxDays:3
-};
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                const req = indexedDB.open(DB_NAME, DB_VERSION);
+                req.onupgradeneeded = (e) => {
+                    const d = e.target.result;
+                    if (!d.objectStoreNames.contains('settings')) d.createObjectStore('settings', { keyPath: 'key' });
+                    if (!d.objectStoreNames.contains('messages')) d.createObjectStore('messages', { keyPath: 'id', autoIncrement: true });
+                    if (!d.objectStoreNames.contains('wordCardGroups')) d.createObjectStore('wordCardGroups', { keyPath: 'id', autoIncrement: true });
+                    if (!d.objectStoreNames.contains('userStickers')) d.createObjectStore('userStickers', { keyPath: 'id', autoIncrement: true });
+                    if (!d.objectStoreNames.contains('otherStickers')) d.createObjectStore('otherStickers', { keyPath: 'id', autoIncrement: true });
+                };
+                req.onsuccess = (e) => { db = e.target.result; resolve(db); };
+                req.onerror = (e) => reject(e.target.error);
+            });
+        }
 
-async function loadSettings(){const all=await dbGetAll('settings');for(const s of all){if(s.key in state)state[s.key]=s.value;}applySkin();}
-async function saveSetting(k,v){state[k]=v;await dbPut('settings',{key:k,value:v});if(['bgImage','topbarColor','bottombarColor'].includes(k))applySkin();}
-function applySkin(){
-  document.body.style.backgroundImage=(state.bgImage&&state.bgImage.startsWith('data:'))?`url(${state.bgImage})`:'';
-  document.body.classList.toggle('has-bg',!!(state.bgImage&&state.bgImage.startsWith('data:')));
-  document.querySelector('.topbar').style.background=state.topbarColor||'#ffffff';
-  document.querySelector('.bottombar').style.background=state.bottombarColor||'#ffffff';
-  document.documentElement.style.setProperty('--topbar-bg',state.topbarColor||'#ffffff');
-  document.documentElement.style.setProperty('--bottombar-bg',state.bottombarColor||'#ffffff');
-}
+        function dbPut(store, data) { return new Promise((resolve, reject) => { const tx = db.transaction(store,'readwrite'); const req = tx.objectStore(store).put(data); req.onsuccess = () => resolve(req.result); req.onerror = () => reject(req.error); }); }
+        function dbGetAll(store) { return new Promise((resolve, reject) => { const tx = db.transaction(store,'readonly'); const req = tx.objectStore(store).getAll(); req.onsuccess = () => resolve(req.result); req.onerror = () => reject(req.error); }); }
+        function dbGet(store, key) { return new Promise((resolve, reject) => { const tx = db.transaction(store,'readonly'); const req = tx.objectStore(store).get(key); req.onsuccess = () => resolve(req.result); req.onerror = () => reject(req.error); }); }
+        function dbDelete(store, key) { return new Promise((resolve, reject) => { const tx = db.transaction(store,'readwrite'); const req = tx.objectStore(store).delete(key); req.onsuccess = () => resolve(); req.onerror = () => reject(req.error); }); }
+        function dbClear(store) { return new Promise((resolve, reject) => { const tx = db.transaction(store,'readwrite'); const req = tx.objectStore(store).clear(); req.onsuccess = () => resolve(); req.onerror = () => reject(req.error); }); }
 
-const chatArea=document.getElementById('chatArea');
-const msgInput=document.getElementById('msgInput');
-const btnSend=document.getElementById('btnSend');
-const btnEmoji=document.getElementById('btnEmoji');
-const btnSettings=document.getElementById('btnSettings');
-const btnWordCards=document.getElementById('btnWordCards');
-const btnLetter=document.getElementById('btnLetter');
-const overlayContainer=document.getElementById('overlayContainer');
-const quoteBar=document.getElementById('quoteBar');
-const quotePreview=document.getElementById('quotePreview');
-const cancelQuote=document.getElementById('cancelQuote');
-const otherAvatarImg=document.getElementById('otherAvatar');
-const otherNameEl=document.getElementById('otherName');
-const otherStatusEl=document.getElementById('otherStatus');
-const hiddenFileInput=document.getElementById('hiddenFileInput');
-const hiddenJsonInput=document.getElementById('hiddenJsonInput');
-const hiddenBgInput=document.getElementById('hiddenBgInput');
-const hiddenEmojiInput=document.getElementById('hiddenEmojiInput');
+        const state = {
+            otherName: 'Satoru',
+            otherStatus: '在线',
+            statusWords: ['在线','忙碌','离开','睡觉中','工作中','想你了','emo中','充电中'],
+            myAvatar: null,
+            otherAvatar: null,
+            minReplySec: 2,
+            maxReplySec: 15,
+            minReplyCount: 1,
+            maxReplyCount: 3,
+            activeWordCardGroupIds: [],   // 多分组同时生效
+            bgImage: null,
+            topbarColor: '#ffffff',
+            bottombarColor: '#ffffff',
+            patItems: [{ a: '悟', b: '拍了拍', c: '我' }], // 拍一拍条目
+        };
 
-let pendingReadCount=0,replyTimer=null,typingIndicatorEl=null,isTyping=false;
-let fileCallback=null,bgCallback=null,emojiCallback=null;
-let statusChangeTimer=null,letterCheckTimer=null;
+        async function loadSettings() {
+            const all = await dbGetAll('settings');
+            for (const s of all) { if (s.key in state) state[s.key] = s.value; }
 
-function formatTime(ts){const d=new Date(ts),n=new Date(),p=x=>String(x).padStart(2,'0');const t=`${p(d.getHours())}:${p(d.getMinutes())}`;if(d.toDateString()===n.toDateString())return t;return `${p(d.getMonth()+1)}/${p(d.getDate())} ${t}`;}
-function scrollToBottom(){requestAnimationFrame(()=>{chatArea.scrollTop=chatArea.scrollHeight})}
-function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+            // 兼容旧版单分组字段
+            const old = all.find(s => s.key === 'activeWordCardGroupId');
+            if (old && old.value != null) {
+                if (!Array.isArray(state.activeWordCardGroupIds) || state.activeWordCardGroupIds.length === 0) {
+                    state.activeWordCardGroupIds = [old.value];
+                }
+            }
+            if (!Array.isArray(state.activeWordCardGroupIds)) state.activeWordCardGroupIds = [];
+            if (!Array.isArray(state.patItems) || state.patItems.length === 0) {
+                state.patItems = [{ a: '悟', b: '拍了拍', c: '我' }];
+            }
+            applySkin();
+        }
+        async function saveSetting(key, value) {
+            state[key] = value;
+            await dbPut('settings', { key, value });
+            if (['bgImage','topbarColor','bottombarColor'].includes(key)) applySkin();
+        }
+        function applySkin() {
+            document.body.style.backgroundImage = (state.bgImage?.startsWith('data:')) ? `url(${state.bgImage})` : '';
+            document.body.classList.toggle('has-bg', !!state.bgImage?.startsWith('data:'));
+            document.querySelector('.topbar').style.background = state.topbarColor || '#ffffff';
+            document.querySelector('.bottombar').style.background = state.bottombarColor || '#ffffff';
+            document.documentElement.style.setProperty('--topbar-bg', state.topbarColor || '#ffffff');
+            document.documentElement.style.setProperty('--bottombar-bg', state.bottombarColor || '#ffffff');
+        }
 
-/* ========== 消息渲染 ========== */
-async function loadMessages(){
-  chatArea.innerHTML='';
-  const msgs=await dbGetAll('messages');
-  msgs.sort((a,b)=>a.timestamp-b.timestamp);
-  for(const m of msgs)appendMsgToDOM(m,false);
-  scrollToBottom();updateOtherUI();
-}
-function appendMsgToDOM(msg,animate=true){
-  const row=document.createElement('div');
-  row.className=`msg-row ${msg.sender==='me'?'me':'other'}`;
-  row.dataset.msgId=msg.id;
-  const bubble=document.createElement('div');
-  bubble.className='msg-bubble';
-  if(msg.type==='pat')bubble.classList.add('pat-bubble');
-  if(msg.quoteId){
-    const qp=document.createElement('div');
-    qp.className='quote-preview';
-    qp.textContent='↩ '+(msg.quotePreview||'引用消息');
-    bubble.appendChild(qp);
-  }
-  if(msg.type==='sticker'){
-    const img=document.createElement('img');
-    img.className='sticker-msg';img.src=msg.content;img.loading='lazy';
-    bubble.appendChild(img);
-  }else{
-    bubble.appendChild(document.createTextNode(msg.content));
-  }
-  row.appendChild(bubble);
-  const timeDiv=document.createElement('div');
-  timeDiv.className='msg-time';timeDiv.textContent=formatTime(msg.timestamp);
-  row.appendChild(timeDiv);
-  if(msg.sender==='me'&&msg.status){
-    const sd=document.createElement('div');
-    sd.className='msg-status';sd.textContent=msg.status==='read'?'已读':'已发送';
-    row.appendChild(sd);
-  }
-  row.addEventListener('click',e=>{e.stopPropagation();showMsgMenu(row,msg)});
-  if(!animate)row.style.animation='none';
-  chatArea.appendChild(row);
-}
-function updateMsgStatus(msgId,status){
-  const row=chatArea.querySelector(`[data-msg-id="${msgId}"]`);
-  if(!row)return;
-  let sd=row.querySelector('.msg-status');
-  if(!sd){sd=document.createElement('div');sd.className='msg-status';row.appendChild(sd)}
-  sd.textContent=status==='read'?'已读':'已发送';
-}
-async function addMessage(sender,content,type='text',quoteId=null,quotePreview=null){
-  const msg={sender,content,type,timestamp:Date.now(),status:sender==='me'?'sent':undefined,quoteId,quotePreview};
-  const id=await dbPut('messages',msg);msg.id=id;
-  appendMsgToDOM(msg,true);scrollToBottom();
-  return msg;
-}
-async function getQuotePreview(msgId){
-  const m=await dbGet('messages',msgId);
-  if(!m)return '';
-  return m.type==='sticker'?'[表情包]':(m.type==='pat'?'[拍一拍]':(m.content||'').slice(0,30));
-}
-async function getRecentUserMessages(limit=10){
-  const all=await dbGetAll('messages');
-  return all.filter(m=>m.sender==='me').sort((a,b)=>b.timestamp-a.timestamp).slice(0,limit);
-}
+        const chatArea = document.getElementById('chatArea');
+        const msgInput = document.getElementById('msgInput');
+        const btnSend = document.getElementById('btnSend');
+        const btnEmoji = document.getElementById('btnEmoji');
+        const btnPat = document.getElementById('btnPat');
+        const btnSettings = document.getElementById('btnSettings');
+        const btnWordCards = document.getElementById('btnWordCards');
+        const overlayContainer = document.getElementById('overlayContainer');
+        const quoteBar = document.getElementById('quoteBar');
+        const quotePreview = document.getElementById('quotePreview');
+        const cancelQuote = document.getElementById('cancelQuote');
+        const otherAvatarImg = document.getElementById('otherAvatar');
+        const otherNameEl = document.getElementById('otherName');
+        const otherStatusEl = document.getElementById('otherStatus');
+        const hiddenFileInput = document.getElementById('hiddenFileInput');
+        const hiddenJsonInput = document.getElementById('hiddenJsonInput');
+        const hiddenBgInput = document.getElementById('hiddenBgInput');
+        const hiddenEmojiInput = document.getElementById('hiddenEmojiInput');
 
-/* ========== 消息操作菜单 ========== */
-function showMsgMenu(row,msg){
-  const old=document.querySelector('.msg-action-menu');
-  if(old)old.remove();
-  const menu=document.createElement('div');
-  menu.className='msg-action-menu';
-  menu.style.cssText='position:absolute;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.18);z-index:30;padding:6px 0;min-width:130px;animation:fadeIn 0.15s ease';
-  const rect=row.getBoundingClientRect(),appRect=document.getElementById('app').getBoundingClientRect();
-  menu.style.top=Math.max(5,Math.min(rect.top-appRect.top-10,appRect.height-160))+'px';
-  menu.style.left=Math.max(5,(msg.sender==='me'?rect.right-appRect.left-140:rect.left-appRect.left))+'px';
-  const bq=document.createElement('button');
-  bq.textContent='💬 引用回复';
-  bq.style.cssText='display:block;width:100%;padding:10px 16px;border:none;background:none;font-size:14px;text-align:left;cursor:pointer';
-  bq.onclick=async()=>{
-    state.quoteMsgId=msg.id;
-    quotePreview.textContent='引用: '+(msg.type==='sticker'?'[表情包]':(msg.content||'').slice(0,30));
-    quoteBar.style.display='flex';menu.remove();msgInput.focus();
-  };
-  menu.appendChild(bq);
-  if(msg.sender==='other'){
-    const bd=document.createElement('button');
-    bd.textContent='🗑 删除此消息';
-    bd.style.cssText='display:block;width:100%;padding:10px 16px;border:none;background:none;font-size:14px;text-align:left;cursor:pointer;color:#e05555';
-    bd.onclick=async()=>{await dbDelete('messages',msg.id);row.remove();menu.remove()};
-    menu.appendChild(bd);
-  }
-  document.getElementById('app').appendChild(menu);
-  const close=e=>{if(!menu.contains(e.target)){menu.remove();document.removeEventListener('click',close)}};
-  setTimeout(()=>document.addEventListener('click',close),50);
-}
+        let pendingReplyTimer = null;
+        let typingIndicatorEl = null;
+        let isTyping = false;
+        let pendingReplyCount = 0;
+        let fileCallback = null;
+        let bgCallback = null;
+        let emojiCallback = null;
+        let statusChangeTimer = null;
 
-/* ========== 核心：用户发消息 → 已读 → 输入中 → 回复 ========== */
-async function handleUserMessage(msg){
-  pendingReadCount++;
-  const readDelay=400+Math.random()*400;
-  setTimeout(async()=>{
-    updateMsgStatus(msg.id,'read');
-    const m=await dbGet('messages',msg.id);
-    if(m&&m.status!=='read'){m.status='read';await dbPut('messages',m)}
-    pendingReadCount--;
-    if(pendingReadCount<=0){pendingReadCount=0;startReplySequence()}
-  },readDelay);
-}
+        function formatTime(ts) { const d=new Date(ts); const pad=n=>String(n).padStart(2,'0'); return `${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+        function scrollToBottom() { requestAnimationFrame(()=>{ chatArea.scrollTop = chatArea.scrollHeight; }); }
+        function sleep(ms) { return new Promise(r=>setTimeout(r,ms)); }
 
-function startReplySequence(){
-  if(replyTimer){clearTimeout(replyTimer);replyTimer=null}
-  showTyping();
-  const minS=Math.max(0,Math.min(120,state.minReplySec||2));
-  const maxS=Math.max(minS,Math.min(300,state.maxReplySec||15));
-  const delay=(minS+Math.random()*(maxS-minS))*1000;
-  replyTimer=setTimeout(async()=>{
-    hideTyping();
-    await executeReply();
-    replyTimer=null;
-  },delay);
-}
+        async function loadMessages() {
+            chatArea.innerHTML = '';
+            const msgs = await dbGetAll('messages');
+            msgs.sort((a,b) => a.timestamp - b.timestamp);
+            for (const m of msgs) appendMsgToDOM(m, false);
+            scrollToBottom();
+            updateOtherUI();
+        }
 
-async function executeReply(){
-  const pool=await buildReplyPool();
-  if(pool.length===0){
-    await addMessage('other','嗯嗯~','text');
-    scrollToBottom();return;
-  }
-  const minC=Math.max(1,Math.min(10,state.replyCountMin||3));
-  const maxC=Math.max(minC,Math.min(10,state.replyCountMax||5));
-  const count=minC+Math.floor(Math.random()*(maxC-minC+1));
-  const temp=[...pool];
-  for(let i=0;i<count;i++){
-    let quoteId=null,quotePrev=null;
-    // 30% 概率引用用户最近消息
-    if(Math.random()<0.3){
-      const recent=await getRecentUserMessages(15);
-      if(recent.length>0){
-        const picked=recent[Math.floor(Math.random()*recent.length)];
-        quoteId=picked.id;
-        quotePrev=picked.type==='sticker'?'[表情包]':(picked.content||'').slice(0,30);
-      }
-    }
-    let item;
-    if(temp.length===0){item={type:'text',content:'嗯嗯~'}}
-    else{const idx=Math.floor(Math.random()*temp.length);item=temp.splice(idx,1)[0]}
-    await addMessage('other',item.content,item.type,quoteId,quotePrev);
-    scrollToBottom();
-    if(i<count-1)await sleep(600+Math.random()*1600);
-  }
-}
+        function appendMsgToDOM(msg, animate=true) {
+            // 拍一拍：居中系统样式
+            if (msg.type === 'pat') {
+                const row = document.createElement('div');
+                row.className = 'msg-row pat-row';
+                row.dataset.msgId = msg.id;
+                const inner = document.createElement('div');
+                inner.className = 'pat-msg';
+                inner.textContent = msg.content;
+                row.appendChild(inner);
+                const timeDiv = document.createElement('div');
+                timeDiv.className = 'msg-time';
+                timeDiv.textContent = formatTime(msg.timestamp);
+                row.appendChild(timeDiv);
+                row.addEventListener('click', (e) => { e.stopPropagation(); showMsgMenu(row, msg); });
+                if (!animate) { row.style.animation='none'; inner.style.animation='none'; }
+                chatArea.appendChild(row);
+                return;
+            }
 
-async function buildReplyPool(){
-  const pool=[];
-  const activeIds=state.activeWordCardGroupIds||[];
-  const groups=await dbGetAll('wordCardGroups');
-  const useGroups=activeIds.length>0?groups.filter(g=>activeIds.includes(g.id)):groups;
-  for(const g of useGroups){
-    if(g.cards)g.cards.forEach(c=>pool.push({type:'text',content:c}));
-    if(g.pats)g.pats.forEach(p=>pool.push({type:'pat',content:p}));
-  }
-  const stickers=await dbGetAll('otherStickers');
-  stickers.forEach(s=>pool.push({type:'sticker',content:s.dataUrl}));
-  return pool;
-}
+            const row = document.createElement('div');
+            row.className = `msg-row ${msg.sender==='me'?'me':'other'}`;
+            row.dataset.msgId = msg.id;
+            const bubble = document.createElement('div');
+            bubble.className = 'msg-bubble';
+            if (msg.quoteId) {
+                const qp = document.createElement('div');
+                qp.className = 'quote-preview';
+                if (msg.quoteSender) {
+                    const who = document.createElement('span');
+                    who.className = 'qwho';
+                    who.textContent = (msg.quoteSender === 'me' ? '我' : (state.otherName || '对方')) + '：';
+                    qp.appendChild(who);
+                }
+                qp.appendChild(document.createTextNode(msg.quotePreview || '引用消息'));
+                bubble.appendChild(qp);
+            }
+            if (msg.type === 'sticker') {
+                const img = document.createElement('img');
+                img.className = 'sticker-msg';
+                img.src = msg.content;
+                bubble.appendChild(img);
+            } else {
+                bubble.textContent = msg.content;
+            }
+            row.appendChild(bubble);
+            const timeDiv = document.createElement('div');
+            timeDiv.className = 'msg-time';
+            timeDiv.textContent = formatTime(msg.timestamp);
+            row.appendChild(timeDiv);
+            if (msg.sender==='me' && msg.status) {
+                const statusDiv = document.createElement('div');
+                statusDiv.className = 'msg-status';
+                statusDiv.textContent = msg.status==='read'?'已读':'已发送';
+                row.appendChild(statusDiv);
+            }
+            row.addEventListener('click', (e) => { e.stopPropagation(); showMsgMenu(row, msg); });
+            if (!animate) row.style.animation = 'none';
+            chatArea.appendChild(row);
+        }
 
-function showTyping(){
-  if(isTyping)return;
-  isTyping=true;
-  typingIndicatorEl=document.createElement('div');
-  typingIndicatorEl.className='typing-indicator';
-  typingIndicatorEl.innerHTML='对方输入中 <span class="typing-dots"><span></span><span></span><span></span></span>';
-  chatArea.appendChild(typingIndicatorEl);scrollToBottom();
-}
-function hideTyping(){
-  isTyping=false;
-  if(typingIndicatorEl&&typingIndicatorEl.parentNode)typingIndicatorEl.parentNode.removeChild(typingIndicatorEl);
-  typingIndicatorEl=null;
-}
-function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+        function updateMsgStatus(msgId, status) {
+            const row = chatArea.querySelector(`[data-msg-id="${msgId}"]`);
+            if (!row) return;
+            if (row.classList.contains('pat-row')) return; // 拍一拍不显示已读
+            let statusDiv = row.querySelector('.msg-status');
+            if (!statusDiv) { statusDiv = document.createElement('div'); statusDiv.className = 'msg-status'; row.appendChild(statusDiv); }
+            statusDiv.textContent = status==='read'?'已读':'已发送';
+        }
 
-/* ========== 状态随机 ========== */
-function startStatusRandomizer(){
-  if(statusChangeTimer)clearTimeout(statusChangeTimer);
-  const change=async()=>{
-    if(state.statusWords.length===0)return;
-    const ns=state.statusWords[Math.floor(Math.random()*state.statusWords.length)];
-    if(ns!==state.otherStatus){state.otherStatus=ns;await saveSetting('otherStatus',ns);otherStatusEl.textContent=ns;}
-    statusChangeTimer=setTimeout(change,(8+Math.random()*45)*60*1000);
-  };
-  statusChangeTimer=setTimeout(change,8000);
-}
+        async function addMessage(sender, content, type='text', quoteId=null, quotePreview=null, quoteSender=null) {
+            const msg = { sender, content, type, timestamp: Date.now(), status: sender==='me'?'sent':undefined, quoteId, quotePreview, quoteSender };
+            const id = await dbPut('messages', msg);
+            msg.id = id;
+            appendMsgToDOM(msg, true);
+            scrollToBottom();
+            return msg;
+        }
 
-/* ========== 面板 ========== */
-function openPanel(html){
-  overlayContainer.innerHTML='';
-  const ov=document.createElement('div');ov.className='overlay';
-  const p=document.createElement('div');p.className='panel';p.innerHTML=html;
-  ov.appendChild(p);
-  ov.addEventListener('click',e=>{if(e.target===ov)closePanel()});
-  overlayContainer.appendChild(ov);
-  p.querySelector('.close-btn')?.addEventListener('click',closePanel);
-}
-function closePanel(){overlayContainer.innerHTML=''}
+        async function getQuoteInfo(msgId) {
+            const all = await dbGetAll('messages');
+            const m = all.find(x=>x.id===msgId);
+            if (!m) return { preview:'', sender:null };
+            return {
+                preview: m.type==='sticker' ? '[表情包]' : (m.type==='pat' ? m.content : (m.content||'').slice(0,30)),
+                sender: m.sender
+            };
+        }
 
-/* ========== 设置面板 ========== */
-function openSettingsPanel(){
-  const minS=state.minReplySec||2,maxS=state.maxReplySec||15;
-  const minC=state.replyCountMin||3,maxC=state.replyCountMax||5;
-  const html=`
-    <button class="close-btn">✕</button><h3>⚙️ 设置</h3>
-    <label>对方名字</label><input type="text" id="setOtherName" value="${escHtml(state.otherName)}">
-    <label>对方状态</label><select id="setOtherStatus">${state.statusWords.map(w=>`<option ${w===state.otherStatus?'selected':''}>${escHtml(w)}</option>`).join('')}</select>
-    <label>状态词管理</label><div class="chip-row" id="statusChips">${state.statusWords.map((w,i)=>`<span class="chip">${escHtml(w)}<small style="color:#e05555;cursor:pointer;margin-left:4px" data-delidx="${i}">×</small></span>`).join('')}</div>
-    <input type="text" id="newStatusWord" placeholder="新状态词" style="width:68%;display:inline-block"><button class="btn btn-smaller btn-primary" id="addStatusWord">+</button>
-    <label>最快回复时长：<span id="minVal">${minS}</span>s（上限120s）</label>
-    <div class="slider-group"><input type="range" id="minReplySlider" min="0" max="120" value="${minS}" step="1"><span class="val" id="minVal2">${minS}s</span></div>
-    <label>最慢回复时长：<span id="maxVal">${maxS}</span>s（上限300s）</label>
-    <div class="slider-group"><input type="range" id="maxReplySlider" min="0" max="300" value="${maxS}" step="1"><span class="val" id="maxVal2">${maxS}s</span></div>
-    <label>回复条数范围：<span id="cMinVal">${minC}</span> - <span id="cMaxVal">${maxC}</span> 条（3-10）</label>
-    <div class="slider-group"><input type="range" id="replyCountMinSlider" min="3" max="10" value="${minC}" step="1"><span class="val">${minC}条</span></div>
-    <div class="slider-group"><input type="range" id="replyCountMaxSlider" min="3" max="10" value="${maxC}" step="1"><span class="val">${maxC}条</span></div>
-    <label>顶栏颜色</label><input type="color" id="topbarColorInput" value="${state.topbarColor||'#ffffff'}">
-    <label>底栏颜色</label><input type="color" id="bottombarColorInput" value="${state.bottombarColor||'#ffffff'}">
-    <label>背景图</label><button class="btn btn-outline btn-smaller" id="btnPickBg">📷 选择</button><button class="btn btn-smaller btn-danger" id="btnClearBg">清除</button>
-    <hr><label>对方头像</label><button class="btn btn-outline btn-smaller" id="btnOtherAvatar">📷 选择</button>
-    <label>我的头像</label><button class="btn btn-outline btn-smaller" id="btnMyAvatar">📷 选择</button>
-    <hr><button class="btn btn-primary" id="btnExportAll">📤 导出全部数据</button>
-    <button class="btn btn-outline" id="btnImportAll">📥 导入全部数据</button>
-    <button class="btn btn-danger btn-smaller" id="btnClearAll">⚠️ 清除所有数据</button>
-  `;
-  openPanel(html);
-  setTimeout(()=>{
-    const minSlider=document.getElementById('minReplySlider');
-    const maxSlider=document.getElementById('maxReplySlider');
-    const cMinSlider=document.getElementById('replyCountMinSlider');
-    const cMaxSlider=document.getElementById('replyCountMaxSlider');
-    minSlider.oninput=function(){
-      document.getElementById('minVal').textContent=this.value;
-      document.getElementById('minVal2').textContent=this.value+'s';
-      if(+maxSlider.value<+this.value){maxSlider.value=this.value;document.getElementById('maxVal').textContent=this.value;document.getElementById('maxVal2').textContent=this.value+'s'}
-    };
-    maxSlider.oninput=function(){
-      document.getElementById('maxVal').textContent=this.value;
-      document.getElementById('maxVal2').textContent=this.value+'s';
-      if(+minSlider.value>+this.value){minSlider.value=this.value;document.getElementById('minVal').textContent=this.value;document.getElementById('minVal2').textContent=this.value+'s'}
-    };
-    cMinSlider.oninput=function(){
-      document.getElementById('cMinVal').textContent=this.value;
-      if(+cMaxSlider.value<+this.value){cMaxSlider.value=this.value;document.getElementById('cMaxVal').textContent=this.value}
-    };
-    cMaxSlider.oninput=function(){
-      document.getElementById('cMaxVal').textContent=this.value;
-      if(+cMinSlider.value>+this.value){cMinSlider.value=this.value;document.getElementById('cMinVal').textContent=this.value}
-    };
-    const saveAll=async()=>{
-      state.minReplySec=+minSlider.value;
-      state.maxReplySec=+maxSlider.value;
-      state.replyCountMin=+cMinSlider.value;
-      state.replyCountMax=+cMaxSlider.value;
-      await saveSetting('minReplySec',state.minReplySec);
-      await saveSetting('maxReplySec',state.maxReplySec);
-      await saveSetting('replyCountMin',state.replyCountMin);
-      await saveSetting('replyCountMax',state.replyCountMax);
-    };
-    minSlider.onchange=saveAll;maxSlider.onchange=saveAll;cMinSlider.onchange=saveAll;cMaxSlider.onchange=saveAll;
-    document.getElementById('setOtherName').onchange=async function(){state.otherName=this.value;await saveSetting('otherName',this.value);otherNameEl.textContent=this.value};
-    document.getElementById('setOtherStatus').onchange=async function(){state.otherStatus=this.value;await saveSetting('otherStatus',this.value);otherStatusEl.textContent=this.value};
-    document.getElementById('addStatusWord').onclick=async()=>{
-      const w=document.getElementById('newStatusWord').value.trim();
-      if(w&&!state.statusWords.includes(w)){state.statusWords.push(w);await saveSetting('statusWords',state.statusWords);closePanel();openSettingsPanel()}
-    };
-    document.getElementById('statusChips').onclick=async e=>{
-      const i=e.target.dataset.delidx;
-      if(i!==undefined){state.statusWords.splice(+i,1);await saveSetting('statusWords',state.statusWords);closePanel();openSettingsPanel()}
-    };
-    document.getElementById('topbarColorInput').oninput=async function(){await saveSetting('topbarColor',this.value)};
-    document.getElementById('bottombarColorInput').oninput=async function(){await saveSetting('bottombarColor',this.value)};
-    document.getElementById('btnPickBg').onclick=()=>{bgCallback=async u=>{await saveSetting('bgImage',u);closePanel();openSettingsPanel()};hiddenBgInput.click()};
-    document.getElementById('btnClearBg').onclick=async()=>{await saveSetting('bgImage',null);closePanel();openSettingsPanel()};
-    document.getElementById('btnOtherAvatar').onclick=()=>{fileCallback=async u=>{state.otherAvatar=u;await saveSetting('otherAvatar',u);updateOtherUI();closePanel();openSettingsPanel()};hiddenFileInput.click()};
-    document.getElementById('btnMyAvatar').onclick=()=>{fileCallback=async u=>{state.myAvatar=u;await saveSetting('myAvatar',u);closePanel();openSettingsPanel()};hiddenFileInput.click()};
-    document.getElementById('btnExportAll').onclick=exportAll;
-    document.getElementById('btnImportAll').onclick=()=>hiddenJsonInput.click();
-    document.getElementById('btnClearAll').onclick=async()=>{
-      if(confirm('清除所有数据？不可恢复！')){
-        await dbClear('messages');await dbClear('settings');await dbClear('wordCardGroups');await dbClear('userStickers');await dbClear('otherStickers');await dbClear('letters');
-        state.bgImage=null;state.otherAvatar=null;state.myAvatar=null;state.topbarColor='#ffffff';state.bottombarColor='#ffffff';
-        state.activeWordCardGroupIds=[];state.autoLetterEnabled=false;
-        applySkin();await loadMessages();updateOtherUI();closePanel();
-      }
-    };
-  },100);
-}
+        function showMsgMenu(row, msg) {
+            const old = document.querySelector('.msg-action-menu');
+            if (old) old.remove();
+            const menu = document.createElement('div');
+            menu.className = 'msg-action-menu';
+            menu.style.position = 'absolute';
+            menu.style.background = '#fff';
+            menu.style.borderRadius = '12px';
+            menu.style.boxShadow = '0 8px 30px rgba(0,0,0,0.18)';
+            menu.style.zIndex = '30';
+            menu.style.padding = '6px 0';
+            menu.style.minWidth = '130px';
+            menu.style.animation = 'fadeIn 0.15s ease';
+            const rect = row.getBoundingClientRect();
+            const appRect = document.getElementById('app').getBoundingClientRect();
+            menu.style.top = Math.max(4, Math.min(rect.top - appRect.top - 10, appRect.height - 170)) + 'px';
+            menu.style.left = (msg.sender==='me'? Math.max(4, rect.right - appRect.left - 140) : Math.max(4, rect.left - appRect.left)) + 'px';
 
-/* ========== 字卡面板（含多分组激活、拍一拍、对方表情库） ========== */
-async function openWordCardsPanel(){
-  const groups=await dbGetAll('wordCardGroups');
-  const activeIds=state.activeWordCardGroupIds||[];
-  let groupsHtml='';
-  for(const g of groups){
-    const isActive=activeIds.includes(g.id);
-    groupsHtml+=`<div class="wordcard-item">
-      <span style="flex:1;font-weight:600">${escHtml(g.name||'未命名')} <small style="color:#999">(${g.cards?.length||0}卡/${g.pats?.length||0}拍)</small></span>
-      <div class="group-toggle ${isActive?'on':''}" data-gid="${g.id}" title="启用/停用"></div>
-      <button class="btn btn-smaller btn-danger delGroupBtn" data-gid="${g.id}">删</button>
-    </div>`;
-  }
-  const html=`
-    <button class="close-btn">✕</button><h3>🃏 字卡板块</h3>
-    <p style="font-size:12px;color:#888;margin-bottom:8px">💡 打开开关可同时启用多个分组，只有开启的分组会被对方回复使用</p>
-    <div style="max-height:180px;overflow-y:auto">${groupsHtml||'<p style="color:#999">暂无分组</p>'}</div>
-    <label>创建新分组</label>
-    <input type="text" id="newGroupName" placeholder="分组名称">
-    <button class="btn btn-primary btn-smaller" id="btnCreateGroup">创建</button>
-    <hr><label>向选中分组批量导入字卡（换行分隔，自动查重）</label>
-    <select id="groupSelect" style="margin-bottom:6px">${groups.map(g=>`<option value="${g.id}">${escHtml(g.name||'未命名')}</option>`).join('')}</select>
-    <textarea id="batchCardsInput" placeholder="内容1&#10;内容2&#10;内容3..."></textarea>
-    <button class="btn btn-primary btn-smaller" id="btnBatchImport">批量导入</button>
-    <button class="btn btn-outline btn-smaller" id="btnJsonImport">📄 JSON导入</button>
-    <button class="btn btn-outline btn-smaller" id="btnExportCards">📤 导出本组字卡</button>
-    <hr><h4>📋 查看/管理本组字卡</h4>
-    <div id="cardsPreview" style="max-height:180px;overflow-y:auto"></div>
-    <button class="btn btn-danger btn-smaller" id="btnClearGroupCards">清空本组字卡</button>
-    <hr><h4>👋 拍一拍编辑（一行一条，例：悟 拍了拍 我）</h4>
-    <div id="patsPreview" style="max-height:120px;overflow-y:auto"></div>
-    <input type="text" id="newPatInput" placeholder="悟 拍了拍 我">
-    <button class="btn btn-primary btn-smaller" id="btnAddPat">+ 添加拍一拍</button>
-    <hr><h4>🖼 对方表情包库</h4>
-    <div class="sticker-grid" id="otherStickerGrid"></div>
-    <button class="btn btn-smaller btn-outline" id="btnAddOtherSticker">📷 导入</button>
-    <button class="btn btn-smaller btn-danger" id="btnClearOtherStickers">清空</button>
-  `;
-  openPanel(html);
-  setTimeout(()=>bindWordCardEvents(groups),100);
-}
+            const btnQuote = document.createElement('button');
+            btnQuote.textContent = '💬 引用回复';
+            btnQuote.style.cssText = 'display:block;width:100%;padding:10px 16px;border:none;background:none;font-size:14px;text-align:left;cursor:pointer;';
+            btnQuote.onclick = async () => {
+                state.quoteMsgId = msg.id;
+                const info = await getQuoteInfo(msg.id);
+                quotePreview.textContent = '引用: ' + info.preview;
+                quoteBar.style.display = 'flex';
+                menu.remove();
+                msgInput.focus();
+            };
+            menu.appendChild(btnQuote);
 
-async function bindWordCardEvents(groups){
-  document.getElementById('btnCreateGroup')?.addEventListener('click',async()=>{
-    const n=document.getElementById('newGroupName').value.trim();
-    if(!n)return;
-    const id=await dbPut('wordCardGroups',{name:n,cards:[],pats:[]});
-    // 默认启用
-    state.activeWordCardGroupIds=[...(state.activeWordCardGroupIds||[]),id];
-    await saveSetting('activeWordCardGroupIds',state.activeWordCardGroupIds);
-    closePanel();openWordCardsPanel();
-  });
-  document.querySelectorAll('.group-toggle').forEach(t=>t.addEventListener('click',async()=>{
-    const gid=+t.dataset.gid;
-    let ids=[...(state.activeWordCardGroupIds||[])];
-    if(ids.includes(gid))ids=ids.filter(i=>i!==gid);else ids.push(gid);
-    state.activeWordCardGroupIds=ids;
-    await saveSetting('activeWordCardGroupIds',ids);
-    t.classList.toggle('on');
-  }));
-  document.querySelectorAll('.delGroupBtn').forEach(b=>b.addEventListener('click',async()=>{
-    if(confirm('删除分组？')){
-      const gid=+b.dataset.gid;
-      await dbDelete('wordCardGroups',gid);
-      state.activeWordCardGroupIds=(state.activeWordCardGroupIds||[]).filter(i=>i!==gid);
-      await saveSetting('activeWordCardGroupIds',state.activeWordCardGroupIds);
-      closePanel();openWordCardsPanel();
-    }
-  }));
-  const gs=document.getElementById('groupSelect');
-  const cardsPrev=document.getElementById('cardsPreview');
-  const patsPrev=document.getElementById('patsPreview');
-  const renderGroupContent=async()=>{
-    const gid=+gs.value;
-    const g=await dbGet('wordCardGroups',gid);
-    if(!g)return;
-    cardsPrev.innerHTML=(g.cards||[]).map((c,i)=>`<div class="wordcard-item"><span style="flex:1;word-break:break-all">${escHtml(c)}</span><button class="btn btn-smaller btn-danger delCardBtn" data-gid="${gid}" data-idx="${i}">×</button></div>`).join('')||'<p style="color:#999;font-size:12px">暂无字卡</p>';
-    patsPrev.innerHTML=(g.pats||[]).map((p,i)=>`<div class="wordcard-item"><span style="flex:1;word-break:break-all">${escHtml(p)}</span><button class="btn btn-smaller btn-danger delPatBtn" data-gid="${gid}" data-idx="${i}">×</button></div>`).join('')||'<p style="color:#999;font-size:12px">暂无拍一拍</p>';
-    document.querySelectorAll('.delCardBtn').forEach(b=>b.addEventListener('click',async()=>{
-      const grp=await dbGet('wordCardGroups',+b.dataset.gid);
-      if(grp){grp.cards.splice(+b.dataset.idx,1);await dbPut('wordCardGroups',grp);renderGroupContent()}
-    }));
-    document.querySelectorAll('.delPatBtn').forEach(b=>b.addEventListener('click',async()=>{
-      const grp=await dbGet('wordCardGroups',+b.dataset.gid);
-      if(grp){grp.pats.splice(+b.dataset.idx,1);await dbPut('wordCardGroups',grp);renderGroupContent()}
-    }));
-  };
-  gs?.addEventListener('change',renderGroupContent);
-  renderGroupContent();
+            const btnDel = document.createElement('button');
+            btnDel.textContent = '🗑 删除';
+            btnDel.style.cssText = 'display:block;width:100%;padding:10px 16px;border:none;background:none;font-size:14px;text-align:left;cursor:pointer;color:#e05555;';
+            btnDel.onclick = async () => { await dbDelete('messages', msg.id); row.remove(); menu.remove(); };
+            menu.appendChild(btnDel);
 
-  document.getElementById('btnBatchImport')?.addEventListener('click',async()=>{
-    const raw=document.getElementById('batchCardsInput').value;
-    const lines=raw.split(/[\n\r]+/).map(l=>l.trim()).filter(l=>l);
-    if(!lines.length){alert('请输入内容');return}
-    const gid=+gs.value;
-    const g=await dbGet('wordCardGroups',gid);
-    if(!g)return;
-    const set=new Set(g.cards||[]);
-    let added=0;
-    lines.forEach(l=>{if(!set.has(l)){set.add(l);added++}});
-    g.cards=[...set];
-    await dbPut('wordCardGroups',g);
-    alert(`导入完成！新增${added}条，去重跳过${lines.length-added}条`);
-    document.getElementById('batchCardsInput').value='';
-    renderGroupContent();
-  });
-  document.getElementById('btnJsonImport')?.addEventListener('click',()=>{
-    hiddenJsonInput.onchange=async e=>{
-      const f=e.target.files[0];if(!f)return;
-      try{
-        const text=await f.text();
-        const data=JSON.parse(text);
-        const gid=+gs.value;
-        const g=await dbGet('wordCardGroups',gid);
-        if(!g)return;
-        let arr=[];
-        if(Array.isArray(data))arr=data.map(String);
-        else if(data.cards)arr=data.cards.map(String);
-        else arr=Object.values(data).map(String);
-        const set=new Set(g.cards||[]);
-        let added=0;
-        arr.forEach(s=>{const t=String(s).trim();if(t&&!set.has(t)){set.add(t);added++}});
-        g.cards=[...set];
-        await dbPut('wordCardGroups',g);
-        alert(`JSON导入完成！新增${added}条`);
-        renderGroupContent();
-      }catch(err){alert('JSON解析失败')}
-      hiddenJsonInput.value='';
-    };
-    hiddenJsonInput.click();
-  });
-  document.getElementById('btnExportCards')?.addEventListener('click',async()=>{
-    const gid=+gs.value;
-    const g=await dbGet('wordCardGroups',gid);
-    if(!g)return;
-    const blob=new Blob([JSON.stringify({name:g.name,cards:g.cards||[]},null,2)],{type:'application/json'});
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`wordcards_${g.name||'group'}.json`;a.click();
-  });
-  document.getElementById('btnClearGroupCards')?.addEventListener('click',async()=>{
-    if(!confirm('清空本组所有字卡？'))return;
-    const gid=+gs.value;
-    const g=await dbGet('wordCardGroups',gid);
-    if(g){g.cards=[];await dbPut('wordCardGroups',g);renderGroupContent()}
-  });
-  document.getElementById('btnAddPat')?.addEventListener('click',async()=>{
-    const v=document.getElementById('newPatInput').value.trim();
-    if(!v)return;
-    const gid=+gs.value;
-    const g=await dbGet('wordCardGroups',gid);
-    if(!g)return;
-    if(!g.pats)g.pats=[];
-    if(!g.pats.includes(v)){g.pats.push(v);await dbPut('wordCardGroups',g)}
-    document.getElementById('newPatInput').value='';
-    renderGroupContent();
-  });
-  // 对方表情包库
-  const osg=document.getElementById('otherStickerGrid');
-  const renderOtherStickers=async()=>{
-    const ss=await dbGetAll('otherStickers');
-    osg.innerHTML=ss.map(s=>`<img src="${s.dataUrl}" class="other-sticker-item" data-id="${s.id}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;cursor:pointer">`).join('')+`<div class="add-sticker-btn" id="addOtherStickerBtn">+</div>`;
-    document.querySelectorAll('.other-sticker-item').forEach(img=>img.onclick=async()=>{
-      if(confirm('删除此表情？')){await dbDelete('otherStickers',+img.dataset.id);renderOtherStickers()}
-    });
-    document.getElementById('addOtherStickerBtn').onclick=()=>{
-      emojiCallback=async urls=>{for(const u of urls)await dbPut('otherStickers',{dataUrl:u});renderOtherStickers()};
-      hiddenEmojiInput.click();
-    };
-  };
-  renderOtherStickers();
-  document.getElementById('btnAddOtherSticker')?.addEventListener('click',()=>{
-    emojiCallback=async urls=>{for(const u of urls)await dbPut('otherStickers',{dataUrl:u});renderOtherStickers()};
-    hiddenEmojiInput.click();
-  });
-  document.getElementById('btnClearOtherStickers')?.addEventListener('click',async()=>{
-    if(confirm('清空对方表情库？')){await dbClear('otherStickers');renderOtherStickers()}
-  });
-}
+            document.getElementById('app').appendChild(menu);
+            const close = (e) => { if (!menu.contains(e.target)) { menu.remove(); document.removeEventListener('click',close); } };
+            setTimeout(()=> document.addEventListener('click',close), 50);
+        }
 
-/* ========== 表情包面板 ========== */
-async function openEmojiPanel(){
-  const ss=await dbGetAll('userStickers');
-  const grid=ss.map(s=>`<img src="${s.dataUrl}" class="user-sticker-item" data-url="${s.dataUrl}">`).join('')+`<div class="add-sticker-btn" id="addUserStickerBtn">+</div>`;
-  const html=`<button class="close-btn">✕</button><h3>😊 我的表情包</h3><div class="sticker-grid" id="userStickerGrid">${grid}</div><button class="btn btn-smaller btn-danger" id="btnClearUserStickers" style="margin-top:10px">清空</button>`;
-  openPanel(html);
-  setTimeout(()=>{
-    document.querySelectorAll('.user-sticker-item').forEach(img=>img.onclick=async()=>{
-      await sendSticker(img.dataset.url);closePanel();
-    });
-    document.getElementById('addUserStickerBtn').onclick=()=>{
-      emojiCallback=async urls=>{for(const u of urls)await dbPut('userStickers',{dataUrl:u});closePanel();openEmojiPanel()};
-      hiddenEmojiInput.click();
-    };
-    document.getElementById('btnClearUserStickers').onclick=async()=>{
-      if(confirm('清空？')){await dbClear('userStickers');closePanel();openEmojiPanel()}
-    };
-  },100);
-}
-async function sendSticker(url){
-  const qid=state.quoteMsgId||null;
-  const qp=qid?await getQuotePreview(qid):null;
-  const msg=await addMessage('me',url,'sticker',qid,qp);
-  state.quoteMsgId=null;quoteBar.style.display='none';
-  handleUserMessage(msg);
-}
+        /* ========== 回复逻辑：已读 -> 立刻显示“对方输入中” -> 等待 -> 回复 ========== */
+        async function handleUserMessage(msg) {
+            pendingReplyCount++;
+            if (pendingReplyTimer) { clearTimeout(pendingReplyTimer); pendingReplyTimer = null; }
 
-/* ========== 信件面板 ========== */
-async function openLetterPanel(){
-  const html=`
-    <button class="close-btn">✕</button><h3>✉️ 信件</h3>
-    <label>写一封信</label>
-    <textarea id="letterInput" placeholder="写下你想说的话..." style="min-height:100px"></textarea>
-    <button class="btn btn-primary" id="btnSendLetter" style="width:100%;margin-top:6px">📮 寄出</button>
-    <hr>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin:6px 0">
-      <span style="font-size:13px;font-weight:600">对方主动写信</span>
-      <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;margin:0">
-        <input type="checkbox" id="autoLetterToggle" ${state.autoLetterEnabled?'checked':''}> 开启（1-3天随机）
-      </label>
-    </div>
-    <div class="slider-group">
-      <span style="font-size:12px">最快(天)</span>
-      <input type="range" id="autoMinDays" min="1" max="3" value="${state.autoLetterMinDays||1}">
-      <span class="val" id="autoMinVal">${state.autoLetterMinDays||1}天</span>
-    </div>
-    <div class="slider-group">
-      <span style="font-size:12px">最慢(天)</span>
-      <input type="range" id="autoMaxDays" min="1" max="3" value="${state.autoLetterMaxDays||3}">
-      <span class="val" id="autoMaxVal">${state.autoLetterMaxDays||3}天</span>
-    </div>
-    <hr><label>📬 收件箱</label>
-    <div id="lettersList" style="max-height:340px;overflow-y:auto"></div>
-  `;
-  openPanel(html);
-  setTimeout(()=>bindLetterEvents(),100);
-  renderLetters();
-}
+            const readDelay = 600 + Math.random() * 1200;
+            setTimeout(async () => {
+                if (msg && msg.id != null) {
+                    updateMsgStatus(msg.id, 'read');
+                    const found = await dbGet('messages', msg.id);
+                    if (found && found.status !== 'read') { found.status = 'read'; await dbPut('messages', found); }
+                }
+                pendingReplyCount--;
+                if (pendingReplyCount <= 0) {
+                    pendingReplyCount = 0;
+                    // 已读后立刻显示“对方输入中”
+                    showTyping();
+                    scheduleReply();
+                }
+            }, readDelay);
+        }
 
-async function renderLetters(){
-  const list=document.getElementById('lettersList');
-  if(!list)return;
-  const letters=await dbGetAll('letters');
-  letters.sort((a,b)=>b.timestamp-a.timestamp);
-  if(letters.length===0){list.innerHTML='<p style="color:#999;font-size:13px;text-align:center;padding:20px">暂无信件</p>';return}
-  list.innerHTML=letters.map(l=>`
-    <div class="letter-item ${l.sender==='other'?'other':''}">
-      <div class="lhead">
-        <span>${l.sender==='me'?'📤 我':'📥 '+(state.otherName||'对方')}</span>
-        <span>${formatTime(l.timestamp)}</span>
-      </div>
-      <div class="lbody">${escHtml(l.content)}</div>
-    </div>
-  `).join('');
-}
+        function scheduleReply() {
+            if (pendingReplyTimer) clearTimeout(pendingReplyTimer);
+            if (pendingReplyCount > 0) return;
+            const minSec = Math.max(0, Math.min(120, state.minReplySec ?? 2));
+            const maxSec = Math.max(minSec, Math.min(300, state.maxReplySec ?? 15));
+            const delay = (minSec + Math.random() * (maxSec - minSec)) * 1000;
+            pendingReplyTimer = setTimeout(executeReply, delay);
+        }
 
-function bindLetterEvents(){
-  const ta=document.getElementById('letterInput');
-  document.getElementById('btnSendLetter').onclick=async()=>{
-    const content=ta.value.trim();
-    if(!content){alert('写点什么再寄出吧');return}
-    await dbPut('letters',{sender:'me',content,timestamp:Date.now(),read:true});
-    ta.value='';
-    // 安排对方3-12小时回信
-    const delayMs=(3+Math.random()*9)*3600*1000;
-    const sched=(await dbGet('settings','scheduledLetterReplies'))?.value||[];
-    sched.push(Date.now()+delayMs);
-    await dbPut('settings',{key:'scheduledLetterReplies',value:sched});
-    alert('信件已寄出，对方将在 3-12 小时内回信');
-    renderLetters();
-  };
-  const toggle=document.getElementById('autoLetterToggle');
-  const minD=document.getElementById('autoMinDays');
-  const maxD=document.getElementById('autoMaxDays');
-  toggle.onchange=async function(){
-    await saveSetting('autoLetterEnabled',this.checked);
-    if(this.checked)scheduleAutoLetter();
-  };
-  minD.oninput=function(){
-    document.getElementById('autoMinVal').textContent=this.value+'天';
-    if(+maxD.value<+this.value){maxD.value=this.value;document.getElementById('autoMaxVal').textContent=this.value+'天'}
-  };
-  maxD.oninput=function(){
-    document.getElementById('autoMaxVal').textContent=this.value+'天';
-    if(+minD.value>+this.value){minD.value=this.value;document.getElementById('autoMinVal').textContent=this.value+'天'}
-  };
-  minD.onchange=async()=>{await saveSetting('autoLetterMinDays',+minD.value)};
-  maxD.onchange=async()=>{await saveSetting('autoLetterMaxDays',+maxD.value)};
-}
+        async function executeReply() {
+            if (pendingReplyCount > 0) return;
+            // 再模拟一小段打字时间（“对方输入中”持续显示中）
+            await sleep(600 + Math.random() * 1400);
+            hideTyping();
 
-/* ========== 对方写信（字卡5-10条） ========== */
-async function sendOtherLetter(){
-  const pool=await buildReplyPool();
-  const textPool=pool.filter(p=>p.type==='text').map(p=>p.content);
-  const count=5+Math.floor(Math.random()*6); // 5-10
-  const lines=[];
-  if(textPool.length===0){lines.push('（对方看着空白的信纸，不知该写什么...）')}
-  else{
-    const temp=[...textPool];
-    for(let i=0;i<count;i++){
-      if(temp.length===0)temp.push(...textPool);
-      const idx=Math.floor(Math.random()*temp.length);
-      lines.push(temp.splice(idx,1)[0]);
-    }
-  }
-  await dbPut('letters',{sender:'other',content:lines.join('\n'),timestamp:Date.now(),read:false});
-  renderLetters();
-}
+            const pool = await buildReplyPool();
+            if (pool.length === 0) {
+                await addMessage('other', '嗯嗯~', 'text');
+                scrollToBottom();
+                return;
+            }
 
-/* ========== 定时任务：检查待回复信件 & 自动写信 ========== */
-async function checkScheduledLetters(){
-  // 1. 检查用户信件的回复
-  const schedSetting=await dbGet('settings','scheduledLetterReplies');
-  if(schedSetting&&Array.isArray(schedSetting.value)){
-    const now=Date.now();
-    const due=schedSetting.value.filter(t=>t<=now);
-    const remain=schedSetting.value.filter(t=>t>now);
-    if(due.length>0){
-      for(const _ of due)await sendOtherLetter();
-      await dbPut('settings',{key:'scheduledLetterReplies',value:remain});
-    }
-  }
-  // 2. 自动写信
-  if(state.autoLetterEnabled){
-    const next=await dbGet('settings','nextAutoLetterTime');
-    const now=Date.now();
-    if(!next||!next.value||next.value<=now){
-      await sendOtherLetter();
-      const minD=Math.max(1,Math.min(3,state.autoLetterMinDays||1));
-      const maxD=Math.max(minD,Math.min(3,state.autoLetterMaxDays||3));
-      const days=minD+Math.random()*(maxD-minD);
-      const nextTime=now+days*24*3600*1000;
-      await dbPut('settings',{key:'nextAutoLetterTime',value:nextTime});
-    }
-  }
-}
+            const minC = Math.max(1, Math.min(10, state.minReplyCount ?? 1));
+            const maxC = Math.max(minC, Math.min(10, state.maxReplyCount ?? 3));
+            const count = Math.floor(Math.random() * (maxC - minC + 1)) + minC;
 
-function scheduleAutoLetter(){
-  if(letterCheckTimer)clearInterval(letterCheckTimer);
-  letterCheckTimer=setInterval(checkScheduledLetters,60000);
-  checkScheduledLetters();
-}
+            const chosen = [];
+            const temp = [...pool];
+            for (let i = 0; i < count && temp.length > 0; i++) {
+                const idx = Math.floor(Math.random() * temp.length);
+                chosen.push(temp.splice(idx, 1)[0]);
+            }
 
-/* ========== 数据导入导出 ========== */
-async function exportAll(){
-  const data={
-    settings:await dbGetAll('settings'),
-    messages:await dbGetAll('messages'),
-    wordCardGroups:await dbGetAll('wordCardGroups'),
-    userStickers:await dbGetAll('userStickers'),
-    otherStickers:await dbGetAll('otherStickers'),
-    letters:await dbGetAll('letters'),
-    exportTime:new Date().toISOString()
-  };
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download=`LoveSatoru_backup_${new Date().toISOString().slice(0,10)}.json`;a.click();
-  alert('数据导出成功');
-}
+            for (let i = 0; i < chosen.length; i++) {
+                const item = chosen[i];
+                await addMessage('other', item.content, item.type);
+                scrollToBottom();
+                if (i < chosen.length - 1) {
+                    // 多条之间短暂停顿，并让“输入中”再闪一下
+                    await sleep(700 + Math.random() * 1300);
+                }
+            }
+        }
 
-async function importAll(text){
-  try{
-    const data=JSON.parse(text);
-    if(!confirm('导入将覆盖当前所有数据，确定继续？'))return;
-    await dbClear('settings');await dbClear('messages');await dbClear('wordCardGroups');await dbClear('userStickers');await dbClear('otherStickers');await dbClear('letters');
-    for(const s of(data.settings||[]))await dbPut('settings',s);
-    for(const m of(data.messages||[]))await dbPut('messages',m);
-    for(const g of(data.wordCardGroups||[]))await dbPut('wordCardGroups',g);
-    for(const s of(data.userStickers||[]))await dbPut('userStickers',s);
-    for(const s of(data.otherStickers||[]))await dbPut('otherStickers',s);
-    for(const l of(data.letters||[]))await dbPut('letters',l);
-    state.bgImage=null;state.otherAvatar=null;state.myAvatar=null;state.activeWordCardGroupIds=[];
-    await loadSettings();await loadMessages();updateOtherUI();closePanel();
-    alert('导入成功');
-  }catch(e){alert('导入失败：'+e.message)}
-}
+        async function buildReplyPool() {
+            const pool = [];
+            const ids = Array.isArray(state.activeWordCardGroupIds) ? state.activeWordCardGroupIds : [];
 
-/* ========== 工具 ========== */
-function updateOtherUI(){
-  if(state.otherAvatar&&state.otherAvatar.startsWith('data:'))otherAvatarImg.src=state.otherAvatar;
-  otherNameEl.textContent=state.otherName||'Satoru';
-  otherStatusEl.textContent=state.otherStatus||'在线';
-}
-function readFileAsDataURL(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f)})}
+            // 字卡：多个分组同时生效
+            if (ids.length > 0) {
+                for (const gid of ids) {
+                    const group = await dbGet('wordCardGroups', gid);
+                    if (group?.cards) group.cards.forEach(c => pool.push({ type:'text', content:c }));
+                }
+            } else {
+                const allGroups = await dbGetAll('wordCardGroups');
+                const texts = new Set();
+                allGroups.forEach(g => g.cards?.forEach(c => texts.add(c)));
+                texts.forEach(c => pool.push({ type:'text', content:c }));
+            }
 
-/* ========== 事件绑定 ========== */
-btnSend.onclick=async()=>{
-  const content=msgInput.value.trim();
-  if(!content)return;
-  msgInput.value='';msgInput.style.height='auto';
-  const qid=state.quoteMsgId||null;
-  const qp=qid?await getQuotePreview(qid):null;
-  const msg=await addMessage('me',content,'text',qid,qp);
-  state.quoteMsgId=null;quoteBar.style.display='none';
-  handleUserMessage(msg);
-};
-msgInput.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();btnSend.click()}};
-msgInput.oninput=()=>{msgInput.style.height='auto';msgInput.style.height=Math.min(msgInput.scrollHeight,100)+'px'};
-btnEmoji.onclick=openEmojiPanel;
-btnSettings.onclick=openSettingsPanel;
-btnWordCards.onclick=openWordCardsPanel;
-btnLetter.onclick=openLetterPanel;
-cancelQuote.onclick=()=>{state.quoteMsgId=null;quoteBar.style.display='none'};
-document.getElementById('avatarWrap').onclick=()=>{fileCallback=async u=>{state.otherAvatar=u;await saveSetting('otherAvatar',u);updateOtherUI()};hiddenFileInput.click()};
-document.getElementById('infoArea').onclick=openSettingsPanel;
-hiddenFileInput.onchange=async e=>{const f=e.target.files[0];if(f){const u=await readFileAsDataURL(f);fileCallback?.(u);fileCallback=null}hiddenFileInput.value=''};
-hiddenBgInput.onchange=async e=>{const f=e.target.files[0];if(f){const u=await readFileAsDataURL(f);bgCallback?.(u);bgCallback=null}hiddenBgInput.value=''};
-hiddenEmojiInput.onchange=async e=>{const files=Array.from(e.target.files);if(files.length){const urls=[];for(const f of files)urls.push(await readFileAsDataURL(f));emojiCallback?.(urls);emojiCallback=null}hiddenEmojiInput.value=''};
-hiddenJsonInput.onchange=async e=>{const f=e.target.files[0];if(f){const t=await f.text();await importAll(t)}hiddenJsonInput.value=''};
-window.addEventListener('popstate',()=>{if(overlayContainer.innerHTML){closePanel();history.pushState(null,'',window.location.href)}});
-history.pushState(null,'',window.location.href);
+            // 表情包
+            const stickers = await dbGetAll('otherStickers');
+            stickers.forEach(s => pool.push({ type:'sticker', content: s.dataUrl }));
 
-/* ========== 初始化 ========== */
-(async()=>{
-  await openDB();
-  await loadSettings();
-  await loadMessages();
-  updateOtherUI();
-  startStatusRandomizer();
-  scheduleAutoLetter();
-  applySkin();
-  console.log('💖 LoveSatoru 已就绪');
-})();
-})();
+            // 拍一拍
+            (state.patItems || []).forEach(p => {
+                if (p && p.a && p.b && p.c) {
+                    pool.push({ type:'pat', content: `${p.a} ${p.b} ${p.c}` });
+                }
+            });
+
+            return pool;
+        }
+
+        function showTyping() {
+            if (isTyping) return;
+            isTyping = true;
+            typingIndicatorEl = document.createElement('div');
+            typingIndicatorEl.className = 'typing-indicator';
+            typingIndicatorEl.innerHTML = '对方输入中 <span class="typing-dots"><span></span><span></span><span></span></span>';
+            chatArea.appendChild(typingIndicatorEl);
+            scrollToBottom();
+        }
+        function hideTyping() {
+            isTyping = false;
+            if (typingIndicatorEl?.parentNode) typingIndicatorEl.parentNode.removeChild(typingIndicatorEl);
+            typingIndicatorEl = null;
+        }
+
+        /* ========== 拍一拍 ========== */
+        async function sendPat() {
+            const items = state.patItems || [];
+            if (items.length === 0) {
+                alert('请先在 🃏 字卡区添加拍一拍内容');
+                return;
+            }
+            const p = items[Math.floor(Math.random() * items.length)];
+            // 我拍对方：c b a  （例如 "我 拍了拍 悟"）
+            const text = `${p.c} ${p.b} ${p.a}`;
+            const msg = await addMessage('me', text, 'pat');
+            handleUserMessage(msg);
+        }
+
+        // 状态随机更换
+        function startStatusRandomizer() {
+            if (statusChangeTimer) clearTimeout(statusChangeTimer);
+            const change = async () => {
+                if (state.statusWords.length === 0) return;
+                const newStatus = state.statusWords[Math.floor(Math.random()*state.statusWords.length)];
+                if (newStatus !== state.otherStatus) {
+                    state.otherStatus = newStatus;
+                    await saveSetting('otherStatus', newStatus);
+                    otherStatusEl.textContent = newStatus;
+                }
+                const next = (10 + Math.random() * 50) * 60 * 1000;
+                statusChangeTimer = setTimeout(change, next);
+            };
+            statusChangeTimer = setTimeout(change, 10000);
+        }
+
+        // UI 面板
+        function openPanel(html) {
+            overlayContainer.innerHTML = '';
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay';
+            const panel = document.createElement('div');
+            panel.className = 'panel';
+            panel.innerHTML = html;
+            overlay.appendChild(panel);
+            overlay.addEventListener('click', (e) => { if (e.target===overlay) closePanel(); });
+            overlayContainer.appendChild(overlay);
+            panel.querySelector('.close-btn')?.addEventListener('click', closePanel);
+        }
+        function closePanel() { overlayContainer.innerHTML = ''; }
+
+        function openSettingsPanel() {
+            const minSec = state.minReplySec ?? 2, maxSec = state.maxReplySec ?? 15;
+            const minCnt = state.minReplyCount ?? 1, maxCnt = state.maxReplyCount ?? 3;
+            const html = `
+            <button class="close-btn">✕</button><h3>⚙️ 设置</h3>
+            <label>对方名字</label><input type="text" id="setOtherName" value="${escHtml(state.otherName)}">
+            <label>对方状态</label><select id="setOtherStatus">${state.statusWords.map(w=>`<option ${w===state.otherStatus?'selected':''}>${escHtml(w)}</option>`).join('')}</select>
+            <label>状态词管理</label><div class="chip-row" id="statusChips">${state.statusWords.map((w,i)=>`<span class="chip">${escHtml(w)}<small style="color:#e05555;cursor:pointer;" data-delidx="${i}">×</small></span>`).join('')}</div>
+            <input type="text" id="newStatusWord" placeholder="新状态词" style="width:70%"><button class="btn btn-smaller btn-primary" id="addStatusWord">+</button>
+
+            <hr>
+            <label>最快回复时长</label>
+            <div class="slider-group"><input type="range" id="minReplySlider" min="0" max="120" value="${minSec}" step="1"><span class="val">${minSec}s</span></div>
+            <label>最慢回复时长</label>
+            <div class="slider-group"><input type="range" id="maxReplySlider" min="0" max="300" value="${maxSec}" step="1"><span class="val">${maxSec}s</span></div>
+
+            <label>最少回复条数</label>
+            <div class="slider-group"><input type="range" id="minCountSlider" min="1" max="10" value="${minCnt}" step="1"><span class="val">${minCnt}条</span></div>
+            <label>最多回复条数</label>
+            <div class="slider-group"><input type="range" id="maxCountSlider" min="1" max="10" value="${maxCnt}" step="1"><span class="val">${maxCnt}条</span></div>
+
+            <label>顶栏颜色</label><input type="color" id="topbarColorInput" value="${state.topbarColor||'#ffffff'}">
+            <label>底栏颜色</label><input type="color" id="bottombarColorInput" value="${state.bottombarColor||'#ffffff'}">
+            <label>背景图</label><button class="btn btn-outline btn-smaller" id="btnPickBg">📷 选择</button><button class="btn btn-smaller btn-danger" id="btnClearBg">清除</button>
+            <hr><label>对方头像</label><button class="btn btn-outline btn-smaller" id="btnOtherAvatar">📷 选择</button>
+            <label>我的头像</label><button class="btn btn-outline btn-smaller" id="btnMyAvatar">📷 选择</button>
+            <hr><button class="btn btn-primary" id="btnExportAll">📤 导出全部数据</button>
+            <button class="btn btn-outline" id="btnImportAll">📥 导入全部数据</button>
+            <button class="btn btn-danger btn-smaller" id="btnClearAll">⚠️ 清除所有</button>
+            `;
+            openPanel(html);
+            setTimeout(()=>{
+                const minS = document.getElementById('minReplySlider');
+                const maxS = document.getElementById('maxReplySlider');
+                const minC = document.getElementById('minCountSlider');
+                const maxC = document.getElementById('maxCountSlider');
+
+                minS.oninput = function() {
+                    this.nextElementSibling.textContent = this.value + 's';
+                    if (+maxS.value < +this.value) { maxS.value = this.value; maxS.nextElementSibling.textContent = this.value + 's'; }
+                };
+                maxS.oninput = function() {
+                    this.nextElementSibling.textContent = this.value + 's';
+                    if (+minS.value > +this.value) { minS.value = this.value; minS.nextElementSibling.textContent = this.value + 's'; }
+                };
+                minC.oninput = function() {
+                    this.nextElementSibling.textContent = this.value + '条';
+                    if (+maxC.value < +this.value) { maxC.value = this.value; maxC.nextElementSibling.textContent = this.value + '条'; }
+                };
+                maxC.oninput = function() {
+                    this.nextElementSibling.textContent = this.value + '条';
+                    if (+minC.value > +this.value) { minC.value = this.value; minC.nextElementSibling.textContent = this.value + '条'; }
+                };
+                minS.onchange = saveReplySettings;
+                maxS.onchange = saveReplySettings;
+                minC.onchange = saveCountSettings;
+                maxC.onchange = saveCountSettings;
+
+                document.getElementById('setOtherName').onchange = async function(){ state.otherName=this.value; await saveSetting('otherName',this.value); otherNameEl.textContent=this.value; };
+                document.getElementById('setOtherStatus').onchange = async function(){ state.otherStatus=this.value; await saveSetting('otherStatus',this.value); otherStatusEl.textContent=this.value; };
+                document.getElementById('addStatusWord').onclick = async ()=>{
+                    const w = document.getElementById('newStatusWord').value.trim();
+                    if(w && !state.statusWords.includes(w)){ state.statusWords.push(w); await saveSetting('statusWords',state.statusWords); closePanel(); openSettingsPanel(); }
+                };
+                document.getElementById('statusChips').onclick = async (e)=>{
+                    const idx = e.target.dataset.delidx;
+                    if(idx!==undefined){ state.statusWords.splice(+idx,1); await saveSetting('statusWords',state.statusWords); closePanel(); openSettingsPanel(); }
+                };
+                document.getElementById('topbarColorInput').oninput = async function(){ await saveSetting('topbarColor',this.value); };
+                document.getElementById('bottombarColorInput').oninput = async function(){ await saveSetting('bottombarColor',this.value); };
+                document.getElementById('btnPickBg').onclick = ()=>{ bgCallback = async (url)=>{ await saveSetting('bgImage',url); closePanel(); openSettingsPanel(); }; hiddenBgInput.click(); };
+                document.getElementById('btnClearBg').onclick = async ()=>{ await saveSetting('bgImage',null); closePanel(); openSettingsPanel(); };
+                document.getElementById('btnOtherAvatar').onclick = ()=>{ fileCallback = async (url)=>{ state.otherAvatar=url; await saveSetting('otherAvatar',url); updateOtherUI(); closePanel(); openSettingsPanel(); }; hiddenFileInput.click(); };
+                document.getElementById('btnMyAvatar').onclick = ()=>{ fileCallback = async (url)=>{ state.myAvatar=url; await saveSetting('myAvatar',url); closePanel(); openSettingsPanel(); }; hiddenFileInput.click(); };
+                document.getElementById('btnExportAll').onclick = exportAll;
+                document.getElementById('btnImportAll').onclick = ()=> hiddenJsonInput.click();
+                document.getElementById('btnClearAll').onclick = async ()=>{
+                    if(confirm('清除所有数据？')){
+                        await dbClear('messages'); await dbClear('settings'); await dbClear('wordCardGroups');
+                        await dbClear('userStickers'); await dbClear('otherStickers');
+                        state.bgImage=null; state.otherAvatar=null; state.myAvatar=null;
+                        state.topbarColor='#ffffff'; state.bottombarColor='#ffffff';
+                        state.activeWordCardGroupIds=[];
+                        state.patItems=[{a:'悟',b:'拍了拍',c:'我'}];
+                        applySkin(); await loadMessages(); updateOtherUI(); closePanel();
+                    }
+                };
+            },100);
+        }
+
+        async function saveReplySettings(){
+            state.minReplySec = +document.getElementById('minReplySlider').value;
+            state.maxReplySec = +document.getElementById('maxReplySlider').value;
+            await saveSetting('minReplySec', state.minReplySec);
+            await saveSetting('maxReplySec', state.maxReplySec);
+        }
+        async function saveCountSettings(){
+            state.minReplyCount = +document.getElementById('minCountSlider').value;
+            state.maxReplyCount = +document.getElementById('maxCountSlider').value;
+            await saveSetting('minReplyCount', state.minReplyCount);
+            await saveSetting('maxReplyCount', state.maxReplyCount);
+        }
+
+        function updateOtherUI(){
+            otherAvatarImg.src = state.otherAvatar?.startsWith('data:') ? state.otherAvatar : otherAvatarImg.src;
+            otherNameEl.textContent = state.otherName || 'Satoru';
+            otherStatusEl.textContent = state.otherStatus || '在线';
+        }
+
+        /* ========== 字卡面板（多分组同时生效 + 拍一拍编辑） ========== */
+        async function openWordCardsPanel(){
+            const groups = await dbGetAll('wordCardGroups');
+            const activeIds = Array.isArray(state.activeWordCardGroupIds) ? state.activeWordCardGroupIds : [];
+
+            let groupsHtml = '';
+            for(const g of groups){
+                const active = activeIds.includes(g.id);
+                groupsHtml += `<div class="wordcard-item" style="${active?'border:2px solid var(--accent);background:#e8f2fc;':''}">
+                    <span>${escHtml(g.name||'未命名')} (${g.cards?.length||0})</span>
+                    <button class="btn btn-smaller ${active?'btn-primary':'btn-outline'} toggleGroupBtn" data-gid="${g.id}">${active?'✅ 启用中':'启用'}</button>
+                    <button class="btn btn-smaller btn-danger delGroupBtn" data-gid="${g.id}">删</button>
+                </div>`;
+            }
+            if (!groupsHtml) groupsHtml = '<p style="font-size:12px;color:#888;padding:6px;">暂无分组</p>';
+
+            const patHtml = (state.patItems||[]).map((p,i)=>`
+                <div class="wordcard-item">
+                    <span>${escHtml(p.a)} ${escHtml(p.b)} ${escHtml(p.c)}</span>
+                    <button class="btn btn-smaller btn-danger delPatBtn" data-idx="${i}">×</button>
+                </div>`).join('') || '<p style="font-size:12px;color:#888;padding:6px;">暂无拍一拍</p>';
+
+            const html = `
+            <button class="close-btn">✕</button><h3>🃏 字卡板块</h3>
+            <div style="font-size:12px;color:#888;margin-bottom:6px;">可同时启用多个分组（共 ${groups.length} 组 / 已启用 ${activeIds.length} 组）</div>
+            <div style="max-height:180px;overflow-y:auto;">${groupsHtml}</div>
+            <label>新分组</label>
+            <input type="text" id="newGroupName" placeholder="名称" style="width:65%"><button class="btn btn-primary btn-smaller" id="btnCreateGroup">创建</button>
+
+            <hr><label>目标分组</label>
+            <select id="groupSelect">${groups.map(g=>`<option value="${g.id}">${escHtml(g.name||'未命名')}</option>`).join('')}</select>
+            <label>批量导入(换行分隔)</label><textarea id="batchCardsInput"></textarea>
+            <button class="btn btn-primary btn-smaller" id="btnBatchImport">批量导入(自动查重)</button>
+            <button class="btn btn-outline btn-smaller" id="btnJsonImport">📄 JSON导入</button>
+            <button class="btn btn-outline btn-smaller" id="btnExportCards">📤 导出此分组</button>
+
+            <hr><label>管理分组字卡</label>
+            <div id="cardsPreview" style="max-height:150px;overflow-y:auto;"></div>
+            <button class="btn btn-danger btn-smaller" id="btnClearGroupCards">清空此分组</button>
+
+            <hr><h4>👋 拍一拍</h4>
+            <div id="patList" style="max-height:150px;overflow-y:auto;">${patHtml}</div>
+            <label>对方名字（如：悟）</label><input type="text" id="patA" placeholder="悟">
+            <label>动作（如：拍了拍）</label><input type="text" id="patB" placeholder="拍了拍">
+            <label>我的名字（如：我）</label><input type="text" id="patC" placeholder="我">
+            <button class="btn btn-primary btn-smaller" id="btnAddPat">+ 添加拍一拍</button>
+            <div style="font-size:12px;color:#888;margin-top:4px;">添加后会与字卡、表情包一起随机出现在对方回复中</div>
+
+            <hr><h4>对方表情包库</h4>
+            <div class="sticker-grid" id="otherStickerGrid"></div>
+            <button class="btn btn-smaller btn-outline" id="btnAddOtherSticker">📷 导入表情</button>
+            <button class="btn btn-smaller btn-danger" id="btnClearOtherStickers">清空</button>
+            `;
+            openPanel(html);
+            setTimeout(()=> bindWordCardEvents(groups), 100);
+        }
+
+        async function bindWordCardEvents(groups){
+            document.getElementById('btnCreateGroup')?.addEventListener('click', async ()=>{
+                const name = document.getElementById('newGroupName').value.trim();
+                if(!name) return;
+                await dbPut('wordCardGroups', {name, cards:[]});
+                closePanel(); openWordCardsPanel();
+            });
+
+            // 多分组启用/停用
+            document.querySelectorAll('.toggleGroupBtn').forEach(b=> b.onclick = async ()=>{
+                const gid = +b.dataset.gid;
+                const arr = Array.isArray(state.activeWordCardGroupIds) ? [...state.activeWordCardGroupIds] : [];
+                const i = arr.indexOf(gid);
+                if (i >= 0) arr.splice(i,1); else arr.push(gid);
+                state.activeWordCardGroupIds = arr;
+                await saveSetting('activeWordCardGroupIds', arr);
+                closePanel(); openWordCardsPanel();
+            });
+
+            document.querySelectorAll('.delGroupBtn').forEach(b=> b.onclick = async ()=>{
+                if(confirm('删除分组？')){
+                    const gid = +b.dataset.gid;
+                    await dbDelete('wordCardGroups', gid);
+                    const arr = (state.activeWordCardGroupIds||[]).filter(x=>x!==gid);
+                    state.activeWordCardGroupIds = arr;
+                    await saveSetting('activeWordCardGroupIds', arr);
+                    closePanel(); openWordCardsPanel();
+                }
+            });
+
+            const groupSelect = document.getElementById('groupSelect');
+            const previewDiv = document.getElementById('cardsPreview');
+            const renderCards = async ()=>{
+                if(!groupSelect.value){ previewDiv.innerHTML=''; return; }
+                const gid = +groupSelect.value;
+                const group = await dbGet('wordCardGroups', gid);
+                previewDiv.innerHTML = group?.cards?.map((c,i)=>`<div class="wordcard-item"><span>${escHtml(c)}</span><button class="btn btn-smaller btn-danger delCardBtn" data-gid="${gid}" data-idx="${i}">×</button></div>`).join('')||'<p style="font-size:12px;color:#888;padding:6px;">空</p>';
+                document.querySelectorAll('.delCardBtn').forEach(b=> b.onclick = async ()=>{
+                    const gid2=+b.dataset.gid, idx=+b.dataset.idx;
+                    const grp = await dbGet('wordCardGroups', gid2);
+                    if(grp){ grp.cards.splice(idx,1); await dbPut('wordCardGroups', grp); renderCards(); }
+                });
+            };
+            groupSelect.onchange = renderCards;
+            renderCards();
+
+            document.getElementById('btnBatchImport')?.addEventListener('click', async ()=>{
+                const raw = document.getElementById('batchCardsInput').value;
+                const lines = raw.split(/[\n\r]+/).map(l=>l.trim()).filter(l=>l);
+                if(!lines.length) return;
+                if(!groupSelect.value) { alert('请先选择一个目标分组'); return; }
+                const gid = +groupSelect.value;
+                const group = await dbGet('wordCardGroups', gid);
+                if(!group) return;
+                const set = new Set(group.cards||[]);
+                let added=0;
+                lines.forEach(l=>{ if(!set.has(l)){ set.add(l); added++; } });
+                group.cards = [...set];
+                await dbPut('wordCardGroups', group);
+                alert(`新增${added}条，跳过${lines.length-added}条重复`);
+                closePanel(); openWordCardsPanel();
+            });
+
+            document.getElementById('btnJsonImport')?.addEventListener('click', ()=>{
+                hiddenJsonInput.click();
+                hiddenJsonInput.onchange = async (e)=>{
+                    const file = e.target.files[0]; if(!file) return;
+                    try{
+                        const text = await file.text();
+                        const data = JSON.parse(text);
+                        if(!groupSelect.value) { alert('请先选择一个目标分组'); return; }
+                        const gid = +groupSelect.value;
+                        const group = await dbGet('wordCardGroups', gid);
+                        if(!group) return;
+                        let arr = [];
+                        if(Array.isArray(data)) arr = data.map(String);
+                        else if(data.cards) arr = data.cards.map(String);
+                        else arr = Object.values(data).map(String);
+                        const set = new Set(group.cards||[]);
+                        let added=0;
+                        arr.forEach(s=>{ const t=String(s).trim(); if(t&&!set.has(t)){ set.add(t); added++; } });
+                        group.cards = [...set];
+                        await dbPut('wordCardGroups', group);
+                        alert(`JSON导入${added}条`);
+                        closePanel(); openWordCardsPanel();
+                    }catch(err){ alert('JSON解析失败'); }
+                    hiddenJsonInput.value='';
+                };
+            });
+
+            document.getElementById('btnExportCards')?.addEventListener('click', async ()=>{
+                if(!groupSelect.value) { alert('请先选择一个分组'); return; }
+                const group = await dbGet('wordCardGroups', +groupSelect.value);
+                if(!group) return;
+                const blob = new Blob([JSON.stringify({name:group.name, cards:group.cards},null,2)],{type:'application/json'});
+                const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `wordcards_${group.name||'group'}.json`; a.click();
+            });
+
+            document.getElementById('btnClearGroupCards').onclick = async ()=>{
+                if(!groupSelect.value) return;
+                if(confirm('清空此分组字卡？')){
+                    const grp = await dbGet('wordCardGroups', +groupSelect.value);
+                    if(grp){ grp.cards=[]; await dbPut('wordCardGroups', grp); renderCards(); }
+                }
+            };
+
+            /* ===== 拍一拍编辑 ===== */
+            const renderPatList = () => {
+                const el = document.getElementById('patList');
+                if(!el) return;
+                el.innerHTML = (state.patItems||[]).map((p,i)=>`
+                    <div class="wordcard-item">
+                        <span>${escHtml(p.a)} ${escHtml(p.b)} ${escHtml(p.c)}</span>
+                        <button class="btn btn-smaller btn-danger delPatBtn" data-idx="${i}">×</button>
+                    </div>`).join('') || '<p style="font-size:12px;color:#888;padding:6px;">暂无拍一拍</p>';
+                el.querySelectorAll('.delPatBtn').forEach(b => b.onclick = async () => {
+                    state.patItems.splice(+b.dataset.idx, 1);
+                    await saveSetting('patItems', state.patItems);
+                    renderPatList();
+                });
+            };
+            document.querySelectorAll('.delPatBtn').forEach(b => b.onclick = async () => {
+                state.patItems.splice(+b.dataset.idx, 1);
+                await saveSetting('patItems', state.patItems);
+                renderPatList();
+            });
+            document.getElementById('btnAddPat').onclick = async () => {
+                const a = document.getElementById('patA').value.trim();
+                const bb = document.getElementById('patB').value.trim();
+                const c = document.getElementById('patC').value.trim();
+                if(!a || !bb || !c){ alert('请把三个输入框都填完整'); return; }
+                state.patItems.push({ a, b: bb, c });
+                await saveSetting('patItems', state.patItems);
+                document.getElementById('patA').value = '';
+                document.getElementById('patB').value = '';
+                document.getElementById('patC').value = '';
+                renderPatList();
+            };
+
+            /* ===== 对方表情包库 ===== */
+            const otherStickerGrid = document.getElementById('otherStickerGrid');
+            const renderOtherStickers = async ()=>{
+                const stickers = await dbGetAll('otherStickers');
+                otherStickerGrid.innerHTML = stickers.map(s=>`<img src="${s.dataUrl}" class="other-sticker-item" data-id="${s.id}">`).join('') + `<div class="add-sticker-btn" id="addOtherStickerBtn">+</div>`;
+                document.querySelectorAll('.other-sticker-item').forEach(img=> img.onclick = async ()=>{
+                    if(confirm('删除此表情？')){ await dbDelete('otherStickers', +img.dataset.id); renderOtherStickers(); }
+                });
+                document.getElementById('addOtherStickerBtn').onclick = ()=>{
+                    emojiCallback = async (urls)=>{ for(const u of urls){ await dbPut('otherStickers',{dataUrl:u}); } renderOtherStickers(); };
+                    hiddenEmojiInput.click();
+                };
+            };
+            renderOtherStickers();
+            document.getElementById('btnAddOtherSticker').onclick = ()=>{ emojiCallback = async (urls)=>{ for(const u of urls){ await dbPut('otherStickers',{dataUrl:u}); } renderOtherStickers(); }; hiddenEmojiInput.click(); };
+            document.getElementById('btnClearOtherStickers').onclick = async ()=>{ if(confirm('清空对方表情库？')){ await dbClear('otherStickers'); renderOtherStickers(); } };
+        }
+
+        async function openEmojiPanel(){
+            const stickers = await dbGetAll('userStickers');
+            let grid = stickers.map(s=>`<img src="${s.dataUrl}" class="user-sticker-item" data-url="${s.dataUrl}">`).join('');
+            grid += `<div class="add-sticker-btn" id="addUserStickerBtn">+</div>`;
+            const html = `<button class="close-btn">✕</button><h3>😊 我的表情包</h3><div class="sticker-grid" id="userStickerGrid">${grid}</div><button class="btn btn-smaller btn-danger" id="btnClearUserStickers">清空</button>`;
+            openPanel(html);
+            setTimeout(()=>{
+                document.querySelectorAll('.user-sticker-item').forEach(img=> img.onclick = async ()=>{
+                    const url = img.dataset.url;
+                    await sendSticker(url);
+                    closePanel();
+                });
+                document.getElementById('addUserStickerBtn').onclick = ()=>{
+                    emojiCallback = async (urls)=>{ for(const u of urls){ await dbPut('userStickers',{dataUrl:u}); } closePanel(); openEmojiPanel(); };
+                    hiddenEmojiInput.click();
+                };
+                document.getElementById('btnClearUserStickers').onclick = async ()=>{
+                    if(confirm('清空？')){ await dbClear('userStickers'); closePanel(); openEmojiPanel(); }
+                };
+            },100);
+        }
+
+        async function sendSticker(url){
+            const quoteId = state.quoteMsgId || null;
+            let qPrev = null, qSender = null;
+            if (quoteId) { const info = await getQuoteInfo(quoteId); qPrev = info.preview; qSender = info.sender; }
+            const msg = await addMessage('me', url, 'sticker', quoteId, qPrev, qSender);
+            state.quoteMsgId = null; quoteBar.style.display='none';
+            handleUserMessage(msg);
+        }
+
+        async function sendMessage(){
+            const content = msgInput.value.trim();
+            if(!content) return;
+            msgInput.value = ''; msgInput.style.height='auto';
+            const quoteId = state.quoteMsgId || null;
+            let qPrev = null, qSender = null;
+            if (quoteId) { const info = await getQuoteInfo(quoteId); qPrev = info.preview; qSender = info.sender; }
+            const msg = await addMessage('me', content, 'text', quoteId, qPrev, qSender);
+            state.quoteMsgId = null; quoteBar.style.display='none';
+            handleUserMessage(msg);
+        }
+
+        async function exportAll(){
+            const data = {
+                settings: await dbGetAll('settings'),
+                messages: await dbGetAll('messages'),
+                wordCardGroups: await dbGetAll('wordCardGroups'),
+                userStickers: await dbGetAll('userStickers'),
+                otherStickers: await dbGetAll('otherStickers'),
+            };
+            const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `LoveSatoru_backup_${new Date().toISOString().slice(0,10)}.json`; a.click();
+        }
+
+        async function importAll(jsonText){
+            try{
+                const data = JSON.parse(jsonText);
+                if(!confirm('导入将覆盖当前数据，确定？')) return;
+                await dbClear('settings'); await dbClear('messages'); await dbClear('wordCardGroups');
+                await dbClear('userStickers'); await dbClear('otherStickers');
+                for(const s of (data.settings||[])) await dbPut('settings',s);
+                for(const m of (data.messages||[])) await dbPut('messages',m);
+                for(const g of (data.wordCardGroups||[])) await dbPut('wordCardGroups',g);
+                for(const s of (data.userStickers||[])) await dbPut('userStickers',s);
+                for(const s of (data.otherStickers||[])) await dbPut('otherStickers',s);
+                state.bgImage=null; state.otherAvatar=null; state.myAvatar=null;
+                state.activeWordCardGroupIds=[];
+                state.patItems=[{a:'悟',b:'拍了拍',c:'我'}];
+                await loadSettings(); await loadMessages(); updateOtherUI(); closePanel();
+                alert('导入成功');
+            }catch(e){ alert('导入失败'); }
+        }
+
+        function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+        function readFileAsDataURL(file){ return new Promise((resolve,reject)=>{ const r=new FileReader(); r.onload=()=>resolve(r.result); r.onerror=reject; r.readAsDataURL(file); }); }
+
+        // 事件绑定
+        btnSend.onclick = sendMessage;
+        msgInput.onkeydown = (e)=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendMessage(); } };
+        msgInput.oninput = ()=>{ msgInput.style.height='auto'; msgInput.style.height=Math.min(msgInput.scrollHeight,100)+'px'; };
+        btnEmoji.onclick = openEmojiPanel;
+        btnPat.onclick = sendPat;
+        btnSettings.onclick = openSettingsPanel;
+        btnWordCards.onclick = openWordCardsPanel;
+        cancelQuote.onclick = ()=>{ state.quoteMsgId=null; quoteBar.style.display='none'; };
+        document.getElementById('avatarWrap').onclick = ()=>{ fileCallback = async (url)=>{ state.otherAvatar=url; await saveSetting('otherAvatar',url); updateOtherUI(); }; hiddenFileInput.click(); };
+        document.getElementById('infoArea').onclick = openSettingsPanel;
+        hiddenFileInput.onchange = async (e)=>{ const f=e.target.files[0]; if(f){ const url=await readFileAsDataURL(f); fileCallback?.(url); fileCallback=null; } hiddenFileInput.value=''; };
+        hiddenBgInput.onchange = async (e)=>{ const f=e.target.files[0]; if(f){ const url=await readFileAsDataURL(f); bgCallback?.(url); bgCallback=null; } hiddenBgInput.value=''; };
+        hiddenEmojiInput.onchange = async (e)=>{ const files=Array.from(e.target.files); if(files.length){ const urls=[]; for(const f of files) urls.push(await readFileAsDataURL(f)); emojiCallback?.(urls); emojiCallback=null; } hiddenEmojiInput.value=''; };
+        hiddenJsonInput.onchange = async (e)=>{ const f=e.target.files[0]; if(f){ const text=await f.text(); await importAll(text); } hiddenJsonInput.value=''; };
+        window.addEventListener('popstate', ()=>{ if(overlayContainer.innerHTML){ closePanel(); history.pushState(null,'',window.location.href); } });
+        history.pushState(null,'',window.location.href);
+
+        (async ()=>{
+            await openDB();
+            await loadSettings();
+            await loadMessages();
+            startStatusRandomizer();
+            updateOtherUI();
+            applySkin();
+        })();
+    })();
 </script>
 </body>
 </html>
